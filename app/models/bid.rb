@@ -14,7 +14,9 @@ class Bid < ApplicationRecord
   validate :amount_must_be_minimum_next_bid, if: -> { auction.present? }
   validate :cannot_bid_on_own_auction, if: -> { auction.present? && user.present? }
 
-  after_create :process_auto_bids
+  attr_accessor :skip_auto_bid_processing
+
+  after_create :process_auto_bids, unless: :skip_auto_bid_processing
   after_create :notify_outbid_users
   after_create_commit :broadcast_bid
 

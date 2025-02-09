@@ -124,3 +124,62 @@ Monitor background jobs at http://localhost:3000/sidekiq (requires authenticatio
 
 In development, emails are caught by the `letter_opener` gem and can be viewed in the browser.
 I have disabled letter_opener since it can get quite annoying when an autobid is outbidding you. You can enable the same to see the emails.
+
+## Future Developments
+
+### Performance Optimizations
+1. **Database Efficiency**
+   - Implement database partitioning for completed auctions to improve query performance
+   - Add materialized views for frequently accessed auction statistics
+   - Implement database cleanup jobs for old/completed auctions
+
+2. **Caching Strategy**
+   - Implement Redis caching for auction current prices and bid counts
+   - Add fragment caching for auction listings and bid history
+   - Cache user bid statistics and auction participation data
+
+3. **Background Processing**
+   - Move email notifications to batch processing for outbid notifications
+   - Implement rate limiting for auto-bidding to prevent system overload
+   - Add queue prioritization for critical jobs (e.g., auction completion)
+
+4. **Real-time Updates**
+   - Optimize WebSocket connections using connection pooling
+   - Implement batch updates for multiple simultaneous bids
+   - Add client-side state management to reduce server requests
+
+5. **Auto-bidding Improvements**
+   - Implement batched bid processing for multiple auto-bids
+   - Add smart bid increment calculations based on auction activity
+   - Optimize locking strategy for high-concurrency auctions
+
+6. **Monitoring and Scaling**
+   - Add performance monitoring for auto-bidding system
+   - Implement horizontal scaling for bid processors
+   - Add automatic cleanup for stale/abandoned auto-bids
+
+### Security Enhancements
+1. **Rate Limiting**
+   - Add bid rate limiting per user
+   - Implement IP-based rate limiting for auction views
+   - Add fraud detection for suspicious bidding patterns
+
+2. **Authentication**
+   - Add two-factor authentication for high-value auctions
+   - Implement OAuth support for social login
+   - Add session management improvements
+
+### User Experience
+1. **Notifications**
+   - Add real-time push notifications
+   - Implement SMS notifications for important events
+   - Add customizable notification preferences
+
+2. **Bidding Interface**
+   - Add bid scheduling for future times
+   - Implement bid suggestions based on history
+   - Add auction analytics for sellers
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.

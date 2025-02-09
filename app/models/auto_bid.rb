@@ -14,8 +14,6 @@ class AutoBid < ApplicationRecord
   validate :one_auto_bid_per_user_per_auction, if: -> { user.present? && auction.present? }
   validate :auction_must_be_active, if: -> { auction.present? }
 
-  after_create :process_auto_bids
-
   scope :for_auction, ->(auction) { where(auction: auction) }
 
   private
@@ -42,9 +40,5 @@ class AutoBid < ApplicationRecord
     return unless auction.ended?
 
     errors.add(:base, 'Cannot set auto bid on ended auction')
-  end
-
-  def process_auto_bids
-    AutoBidProcessor.new(auction).process
   end
 end

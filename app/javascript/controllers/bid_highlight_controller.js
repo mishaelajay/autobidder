@@ -15,13 +15,13 @@ export default class extends Controller {
         avatar.classList.add('bg-green-100')
       }
 
-      const initial = avatar.querySelector('span')
+      const initial = this.element.querySelector('.rounded-full span')
       if (initial) {
         initial.classList.remove('text-indigo-600')
         initial.classList.add('text-green-600')
       }
 
-      const amount = this.element.querySelector('.font-semibold')
+      const amount = this.element.querySelector('.text-lg.font-semibold')
       if (amount) {
         amount.classList.remove('text-indigo-600')
         amount.classList.add('text-green-600')

@@ -42,14 +42,14 @@ class AutoBidProcessor
   end
 
   def create_bid(user_id, amount)
-    bid = Bid.create!(
+    bid = Bid.new(
       user_id: user_id,
       auction_id: @auction.id,
-      amount: amount
+      amount: amount,
+      skip_auto_bid_processing: true
     )
-
-    # Recursively process next auto bid if available
-    process if bid.persisted?
+    bid.save!
+    bid
   end
 
   def calculate_next_minimum_bid(current_price)
