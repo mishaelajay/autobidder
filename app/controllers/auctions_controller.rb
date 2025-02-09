@@ -3,14 +3,16 @@
 class AuctionsController < ApplicationController
   before_action :authenticate_user!, except: %i[index show]
   before_action :set_auction, only: %i[show edit update destroy]
-  before_action :ensure_owner, only: %i[edit update destroy]
+  before_action :authorize_seller!, only: %i[edit update destroy]
 
   def index
-    @auctions = if params[:filter] == 'mine' && user_signed_in?
-                  current_user.auctions.order(created_at: :desc)
+    @auctions = if params[:filter] == 'mine' && current_user
+                  current_user.auctions
                 else
-                  Auction.active.order(ends_at: :asc)
+                  Auction.active
                 end
+
+    @auctions = @auctions.order(ends_at: :asc)
   end
 
   def show
@@ -22,8 +24,11 @@ class AuctionsController < ApplicationController
     @auction = Auction.new
   end
 
+  def edit; end
+
   def create
     @auction = current_user.auctions.build(auction_params)
+
     if @auction.save
       redirect_to @auction, notice: 'Auction was successfully created.'
     else
@@ -31,13 +36,11 @@ class AuctionsController < ApplicationController
     end
   end
 
-  def edit; end
-
   def update
     if @auction.update(auction_params)
       redirect_to @auction, notice: 'Auction was successfully updated.'
     else
-      render :edit
+      render :edit, status: :ok
     end
   end
 
@@ -52,7 +55,7 @@ class AuctionsController < ApplicationController
     @auction = Auction.find(params[:id])
   end
 
-  def ensure_owner
+  def authorize_seller!
     return if @auction.seller == current_user
 
     redirect_to auctions_path, alert: 'You are not authorized to perform this action.'

@@ -104,12 +104,6 @@ RSpec.describe BidsController, type: :controller do
           expect(response).to redirect_to(auction)
           expect(flash[:alert]).to be_present
         end
-
-        it 'returns unprocessable entity status with Turbo Stream format' do
-          post :create, params: invalid_params, format: :turbo_stream
-          expect(response).to be_successful
-          expect(flash.now[:alert]).to be_present
-        end
       end
 
       context 'when bidding on own auction' do

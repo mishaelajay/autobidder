@@ -152,7 +152,7 @@ RSpec.describe AuctionsController, type: :controller do
 
         it 'returns unprocessable entity status' do
           post :create, params: { auction: invalid_attributes }
-          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response).to have_http_status(422)
         end
       end
     end
@@ -230,7 +230,7 @@ RSpec.describe AuctionsController, type: :controller do
         context 'with invalid params' do
           it 'returns a success response (i.e. to display the edit template)' do
             patch :update, params: { id: auction.id, auction: invalid_attributes }
-            expect(response).to be_successful
+            expect(response).to have_http_status(:ok)
           end
         end
       end
