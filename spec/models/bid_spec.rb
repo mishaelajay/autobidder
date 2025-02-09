@@ -2,21 +2,21 @@
 
 require 'rails_helper'
 
-RSpec.describe Bid, type: :model do
+RSpec.describe Bid do
+  let(:bid) { build(:bid, user: bidder, auction: auction, amount: 150) }
+  let(:auction) { create(:auction, seller: seller, starting_price: 100) }
+  let(:bidder) { create(:user) }
+  let(:seller) { create(:user) }
+
   describe 'associations' do
-    it { should belong_to(:user) }
-    it { should belong_to(:auction).touch(true) }
+    it { is_expected.to belong_to(:user) }
+    it { is_expected.to belong_to(:auction).touch(true) }
   end
 
   describe 'validations' do
-    it { should validate_presence_of(:amount) }
-    it { should validate_numericality_of(:amount).is_greater_than(0) }
+    it { is_expected.to validate_presence_of(:amount) }
+    it { is_expected.to validate_numericality_of(:amount).is_greater_than(0) }
   end
-
-  let(:seller) { create(:user) }
-  let(:bidder) { create(:user) }
-  let(:auction) { create(:auction, seller: seller, starting_price: 100) }
-  let(:bid) { build(:bid, user: bidder, auction: auction, amount: 150) }
 
   describe 'custom validations' do
     context 'auction_must_be_active' do
@@ -80,7 +80,7 @@ RSpec.describe Bid, type: :model do
 
   describe 'pagination' do
     it 'sets default per page to 25' do
-      expect(Bid.default_per_page).to eq(25)
+      expect(described_class.default_per_page).to eq(25)
     end
   end
 end

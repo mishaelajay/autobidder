@@ -2,28 +2,28 @@
 
 require 'rails_helper'
 
-RSpec.describe Auction, type: :model do
+RSpec.describe Auction do
+  let(:auction) { build(:auction, seller: seller) }
+  let(:seller) { create(:user) }
+
   describe 'associations' do
-    it { should belong_to(:seller).class_name('User') }
-    it { should belong_to(:winning_bid).class_name('Bid').optional }
-    it { should have_many(:bids).dependent(:destroy) }
-    it { should have_many(:bidders).through(:bids).source(:user) }
-    it { should have_many(:auto_bids).dependent(:destroy) }
+    it { is_expected.to belong_to(:seller).class_name('User') }
+    it { is_expected.to belong_to(:winning_bid).class_name('Bid').optional }
+    it { is_expected.to have_many(:bids).dependent(:destroy) }
+    it { is_expected.to have_many(:bidders).through(:bids).source(:user) }
+    it { is_expected.to have_many(:auto_bids).dependent(:destroy) }
   end
 
   describe 'validations' do
-    it { should validate_presence_of(:title) }
-    it { should validate_presence_of(:description) }
-    it { should validate_presence_of(:starting_price) }
-    it { should validate_presence_of(:minimum_selling_price) }
-    it { should validate_presence_of(:ends_at) }
+    it { is_expected.to validate_presence_of(:title) }
+    it { is_expected.to validate_presence_of(:description) }
+    it { is_expected.to validate_presence_of(:starting_price) }
+    it { is_expected.to validate_presence_of(:minimum_selling_price) }
+    it { is_expected.to validate_presence_of(:ends_at) }
 
-    it { should validate_numericality_of(:starting_price).is_greater_than_or_equal_to(0) }
-    it { should validate_numericality_of(:minimum_selling_price).is_greater_than_or_equal_to(0) }
+    it { is_expected.to validate_numericality_of(:starting_price).is_greater_than_or_equal_to(0) }
+    it { is_expected.to validate_numericality_of(:minimum_selling_price).is_greater_than_or_equal_to(0) }
   end
-
-  let(:seller) { create(:user) }
-  let(:auction) { build(:auction, seller: seller) }
 
   describe 'custom validations' do
     context 'ends_at_must_be_future' do
@@ -56,41 +56,41 @@ RSpec.describe Auction, type: :model do
 
     describe '.active' do
       it 'includes auctions that have not ended' do
-        expect(Auction.active).to include(active_auction)
+        expect(described_class.active).to include(active_auction)
       end
 
       it 'excludes auctions that have ended' do
-        expect(Auction.active).not_to include(ended_auction)
+        expect(described_class.active).not_to include(ended_auction)
       end
     end
 
     describe '.ended' do
       it 'includes auctions that have ended' do
-        expect(Auction.ended).to include(ended_auction)
+        expect(described_class.ended).to include(ended_auction)
       end
 
       it 'excludes auctions that have not ended' do
-        expect(Auction.ended).not_to include(active_auction)
+        expect(described_class.ended).not_to include(active_auction)
       end
     end
 
     describe '.won' do
       it 'includes auctions with winning bids' do
-        expect(Auction.won).to include(won_auction)
+        expect(described_class.won).to include(won_auction)
       end
 
       it 'excludes auctions without winning bids' do
-        expect(Auction.won).not_to include(unsold_auction)
+        expect(described_class.won).not_to include(unsold_auction)
       end
     end
 
     describe '.unsold' do
       it 'includes auctions without winning bids' do
-        expect(Auction.unsold).to include(unsold_auction)
+        expect(described_class.unsold).to include(unsold_auction)
       end
 
       it 'excludes auctions with winning bids' do
-        expect(Auction.unsold).not_to include(won_auction)
+        expect(described_class.unsold).not_to include(won_auction)
       end
     end
   end

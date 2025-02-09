@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe ExternalSystemNotifierJob, type: :job do
+RSpec.describe ExternalSystemNotifierJob do
   include ActiveJob::TestHelper
 
   let(:event) { 'auction_completed' }

@@ -55,7 +55,7 @@ Rails.application.configure do
 
   # Log to STDOUT by default
   config.logger = ActiveSupport::Logger.new($stdout)
-                                       .tap  { |logger| logger.formatter = ::Logger::Formatter.new }
+                                       .tap  { |logger| logger.formatter = Logger::Formatter.new }
                                        .then { |logger| ActiveSupport::TaggedLogging.new(logger) }
 
   # Prepend all log lines with the following tags.
@@ -98,15 +98,15 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   # Configure default URL options for ActionMailer
-  config.action_mailer.default_url_options = { host: ENV['APPLICATION_HOST'] }
+  config.action_mailer.default_url_options = { host: ENV.fetch('APPLICATION_HOST', nil) }
 
   # Configure SMTP settings if needed
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address: ENV['SMTP_SERVER'],
-    port: ENV['SMTP_PORT'],
-    user_name: ENV['SMTP_USERNAME'],
-    password: ENV['SMTP_PASSWORD'],
+    address: ENV.fetch('SMTP_SERVER', nil),
+    port: ENV.fetch('SMTP_PORT', nil),
+    user_name: ENV.fetch('SMTP_USERNAME', nil),
+    password: ENV.fetch('SMTP_PASSWORD', nil),
     authentication: 'plain',
     enable_starttls_auto: true
   }

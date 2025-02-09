@@ -23,7 +23,7 @@ class Auction < ApplicationRecord
   after_create :schedule_completion_job
 
   scope :active, -> { where('ends_at > ?', Time.current) }
-  scope :ended, -> { where('ends_at <= ?', Time.current) }
+  scope :ended, -> { where(ends_at: ..Time.current) }
   scope :won, -> { ended.joins(:bids).where('bids.amount >= auctions.minimum_selling_price') }
   scope :unsold, -> { ended.left_joins(:bids).where('bids.id IS NULL OR bids.amount < auctions.minimum_selling_price') }
 

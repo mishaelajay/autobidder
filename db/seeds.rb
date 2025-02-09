@@ -11,7 +11,7 @@
 #   end
 
 # Create test users
-puts 'Creating users...'
+Rails.logger.debug 'Creating users...'
 
 seller = User.create!(
   email: 'seller@example.com',
@@ -34,7 +34,7 @@ bidder2 = User.create!(
   name: 'Test Bidder 2'
 )
 
-puts 'Creating auctions...'
+Rails.logger.debug 'Creating auctions...'
 
 # Create active auctions
 3.times do |i|
@@ -47,7 +47,7 @@ puts 'Creating auctions...'
     ends_at: rand(1..7).days.from_now
   )
 
-  puts "Created auction: #{auction.title}"
+  Rails.logger.debug { "Created auction: #{auction.title}" }
 
   # Add some initial bids
   next unless rand > 0.5
@@ -77,7 +77,7 @@ ending_soon = Auction.create!(
   ends_at: 30.minutes.from_now
 )
 
-puts "Created auction: #{ending_soon.title}"
+Rails.logger.debug { "Created auction: #{ending_soon.title}" }
 
 # Create some bids on the ending soon auction
 Bid.create!(
@@ -99,11 +99,11 @@ AutoBid.create!(
   maximum_amount: 75.00
 )
 
-puts "\nSeeding completed!"
-puts 'Test accounts created:'
-puts 'Seller: seller@example.com / password123'
-puts 'Bidder 1: bidder1@example.com / password123'
-puts 'Bidder 2: bidder2@example.com / password123'
-puts "\nCreated #{Auction.count} auctions"
-puts "Created #{Bid.count} bids"
-puts "Created #{AutoBid.count} auto bids"
+Rails.logger.debug "\nSeeding completed!"
+Rails.logger.debug 'Test accounts created:'
+Rails.logger.debug 'Seller: seller@example.com / password123'
+Rails.logger.debug 'Bidder 1: bidder1@example.com / password123'
+Rails.logger.debug 'Bidder 2: bidder2@example.com / password123'
+Rails.logger.debug { "\nCreated #{Auction.count} auctions" }
+Rails.logger.debug { "Created #{Bid.count} bids" }
+Rails.logger.debug { "Created #{AutoBid.count} auto bids" }

@@ -7,7 +7,7 @@ class AuctionStatusUpdaterJob < ApplicationJob
 
   def perform
     # Find auctions that have ended but haven't been processed
-    Auction.active.where('ends_at <= ?', Time.current).find_each do |auction|
+    Auction.active.where(ends_at: ..Time.current).find_each do |auction|
       # Process the auction end
       process_auction_end(auction)
     end

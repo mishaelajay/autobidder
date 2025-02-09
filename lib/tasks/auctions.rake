@@ -20,7 +20,7 @@ namespace :auctions do
   desc 'Schedule completion for all ended but uncompleted auctions'
   task schedule_completions: :environment do
     auctions = Auction
-               .where('ends_at <= ?', Time.current)
+               .where(ends_at: ..Time.current)
                .where(completed_at: nil)
                .where(winning_bid_id: nil)
 

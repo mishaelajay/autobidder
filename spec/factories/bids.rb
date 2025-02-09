@@ -2,8 +2,8 @@
 
 FactoryBot.define do
   factory :bid do
-    association :user
-    association :auction
+    user
+    auction
 
     amount { auction.minimum_next_bid }
 

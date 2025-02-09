@@ -2,24 +2,24 @@
 
 require 'rails_helper'
 
-RSpec.describe User, type: :model do
+RSpec.describe User do
+  let(:auction) { create(:auction, seller: create(:user)) }
+  let(:user) { create(:user) }
+
   describe 'associations' do
-    it { should have_many(:bids).dependent(:destroy) }
-    it { should have_many(:auto_bids).dependent(:destroy) }
-    it { should have_many(:auctions).with_foreign_key('seller_id').dependent(:destroy) }
-    it { should have_many(:won_auctions).class_name('Auction').with_foreign_key('winning_bidder_id') }
+    it { is_expected.to have_many(:bids).dependent(:destroy) }
+    it { is_expected.to have_many(:auto_bids).dependent(:destroy) }
+    it { is_expected.to have_many(:auctions).with_foreign_key('seller_id').dependent(:destroy) }
+    it { is_expected.to have_many(:won_auctions).class_name('Auction').with_foreign_key('winning_bidder_id') }
   end
 
   describe 'validations' do
     subject { create(:user) }
 
-    it { should validate_presence_of(:email) }
-    it { should validate_uniqueness_of(:email).case_insensitive }
-    it { should validate_presence_of(:name) }
+    it { is_expected.to validate_presence_of(:email) }
+    it { is_expected.to validate_uniqueness_of(:email).case_insensitive }
+    it { is_expected.to validate_presence_of(:name) }
   end
-
-  let(:user) { create(:user) }
-  let(:auction) { create(:auction, seller: create(:user)) }
 
   describe 'instance methods' do
     describe '#has_auto_bid_for?' do
@@ -67,9 +67,9 @@ RSpec.describe User, type: :model do
         create(:auction, seller: seller_with_active, ends_at: 1.day.from_now)
         create(:auction, :ended, seller: seller_with_ended)
 
-        expect(User.active_sellers).to include(seller_with_active)
-        expect(User.active_sellers).not_to include(seller_with_ended)
-        expect(User.active_sellers).not_to include(buyer)
+        expect(described_class.active_sellers).to include(seller_with_active)
+        expect(described_class.active_sellers).not_to include(seller_with_ended)
+        expect(described_class.active_sellers).not_to include(buyer)
       end
     end
 
@@ -85,9 +85,9 @@ RSpec.describe User, type: :model do
         create(:bid, user: bidder_on_active, auction: active_auction)
         create(:bid, :for_ended_auction, user: bidder_on_ended, auction: ended_auction)
 
-        expect(User.active_bidders).to include(bidder_on_active)
-        expect(User.active_bidders).not_to include(bidder_on_ended)
-        expect(User.active_bidders).not_to include(non_bidder)
+        expect(described_class.active_bidders).to include(bidder_on_active)
+        expect(described_class.active_bidders).not_to include(bidder_on_ended)
+        expect(described_class.active_bidders).not_to include(non_bidder)
       end
     end
   end

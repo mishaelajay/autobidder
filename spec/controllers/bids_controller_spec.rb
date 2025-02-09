@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe BidsController, type: :controller do
+RSpec.describe BidsController do
   let(:user) { create(:user) }
   let(:seller) { create(:user) }
   let(:auction) { create(:auction, seller: seller, starting_price: 100) }

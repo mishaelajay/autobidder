@@ -9,7 +9,6 @@ class Bid < ApplicationRecord
   belongs_to :auction, touch: true
 
   validates :amount, presence: true, numericality: { greater_than: 0 }
-  validates :user, :auction, presence: true
 
   validate :auction_must_be_active, if: -> { auction.present? }
   validate :amount_must_be_minimum_next_bid, if: -> { auction.present? }

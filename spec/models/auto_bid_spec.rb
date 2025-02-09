@@ -2,21 +2,21 @@
 
 require 'rails_helper'
 
-RSpec.describe AutoBid, type: :model do
+RSpec.describe AutoBid do
+  let(:auto_bid) { build(:auto_bid, user: bidder, auction: auction) }
+  let(:auction) { create(:auction, seller: seller) }
+  let(:bidder) { create(:user) }
+  let(:seller) { create(:user) }
+
   describe 'associations' do
-    it { should belong_to(:user) }
-    it { should belong_to(:auction) }
+    it { is_expected.to belong_to(:user) }
+    it { is_expected.to belong_to(:auction) }
   end
 
   describe 'validations' do
-    it { should validate_presence_of(:maximum_amount) }
-    it { should validate_numericality_of(:maximum_amount).is_greater_than(0) }
+    it { is_expected.to validate_presence_of(:maximum_amount) }
+    it { is_expected.to validate_numericality_of(:maximum_amount).is_greater_than(0) }
   end
-
-  let(:seller) { create(:user) }
-  let(:bidder) { create(:user) }
-  let(:auction) { create(:auction, seller: seller) }
-  let(:auto_bid) { build(:auto_bid, user: bidder, auction: auction) }
 
   describe 'custom validations' do
     context 'auction_must_be_active' do

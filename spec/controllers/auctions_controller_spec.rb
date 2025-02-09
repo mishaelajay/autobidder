@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe AuctionsController, type: :controller do
+RSpec.describe AuctionsController do
   let(:user) { create(:user) }
   let(:valid_attributes) do
     {
@@ -152,7 +152,7 @@ RSpec.describe AuctionsController, type: :controller do
 
         it 'returns unprocessable entity status' do
           post :create, params: { auction: invalid_attributes }
-          expect(response).to have_http_status(422)
+          expect(response).to have_http_status(:unprocessable_content)
         end
       end
     end

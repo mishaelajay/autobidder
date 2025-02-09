@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe ScheduleAuctionCompletionsJob, type: :job do
+RSpec.describe ScheduleAuctionCompletionsJob do
   include ActiveJob::TestHelper
 
   describe '#perform' do

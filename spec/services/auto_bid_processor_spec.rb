@@ -55,20 +55,6 @@ RSpec.describe AutoBidProcessor do
       end
     end
 
-    context 'when multiple auto bids compete' do
-      let(:bidder1) { create(:user) }
-      let(:bidder2) { create(:user) }
-
-      before do
-        # Skip validation since we're setting up a test scenario
-        auto_bid1 = build(:auto_bid, auction: auction, user: bidder1, maximum_amount: 200, created_at: 1.minute.ago)
-        auto_bid1.save(validate: false)
-
-        auto_bid2 = build(:auto_bid, auction: auction, user: bidder2, maximum_amount: 150, created_at: 2.minutes.ago)
-        auto_bid2.save(validate: false)
-      end
-    end
-
     context 'when auto bid matches current highest bid' do
       let(:bidder1) { create(:user) }
       let(:current_highest_bidder) { create(:user) }

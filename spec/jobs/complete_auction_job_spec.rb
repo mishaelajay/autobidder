@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe CompleteAuctionJob, type: :job do
+RSpec.describe CompleteAuctionJob do
   include ActiveJob::TestHelper
 
   let(:seller) { create(:user) }
@@ -17,7 +17,7 @@ RSpec.describe CompleteAuctionJob, type: :job do
         expect do
           perform_enqueued_jobs { described_class.perform_later(auction.id) }
         end.to change { auction.reload.completed? }.from(false).to(true)
-                                                   .and change { auction.winning_bid_id }.to(winning_bid.id)
+                                                   .and change(auction, :winning_bid_id).to(winning_bid.id)
       end
 
       it 'sends notifications' do

@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :auction do
-    association :seller, factory: :user
+    seller factory: %i[user]
 
     sequence(:title) { |n| "Auction #{n}" }
     description { 'A detailed description of the item' }

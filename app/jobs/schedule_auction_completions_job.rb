@@ -11,7 +11,7 @@ class ScheduleAuctionCompletionsJob < ApplicationJob
     # 2. Haven't been completed yet
     # 3. Don't have a winning bid set
     pending_auctions = Auction
-                       .where('ends_at <= ?', Time.current)
+                       .where(ends_at: ..Time.current)
                        .where(completed_at: nil)
                        .where(winning_bid_id: nil)
 

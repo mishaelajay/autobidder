@@ -20,7 +20,7 @@ class AutoBidProcessor
 
   def should_process?
     @auction.active? &&
-      @auction.auto_bids.where('maximum_amount > ?', @auction.current_price).exists?
+      @auction.auto_bids.exists?(['maximum_amount > ?', @auction.current_price])
   end
 
   def fetch_bids
@@ -42,9 +42,9 @@ class AutoBidProcessor
 
   def bid_select_fields
     'bids.user_id, bids.amount, ' \
-    'auto_bids.id AS auto_bid_id, ' \
-    'auto_bids.user_id AS auto_bid_user_id, ' \
-    'auto_bids.maximum_amount'
+      'auto_bids.id AS auto_bid_id, ' \
+      'auto_bids.user_id AS auto_bid_user_id, ' \
+      'auto_bids.maximum_amount'
   end
 
   def auto_bids_join
