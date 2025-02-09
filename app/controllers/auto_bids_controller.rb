@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Controller responsible for managing automatic bidding settings.
+# Handles creation and management of auto-bid configurations for users.
 class AutoBidsController < ApplicationController
   before_action :set_auction
 

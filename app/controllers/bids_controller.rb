@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Controller responsible for managing auction bids.
+# Handles bid creation and viewing bid history.
 class BidsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_auction, only: [:create]
@@ -26,12 +28,9 @@ class BidsController < ApplicationController
     # Use transaction to ensure data consistency
     ActiveRecord::Base.transaction do
       if @bid.save
-        respond_to do |format|
-          format.html { redirect_to @auction, notice: 'Bid was successfully placed.' }
-          format.turbo_stream { head :ok }
-        end
+        handle_successful_bid
       else
-        redirect_to @auction, alert: @bid.errors.full_messages.to_sentence
+        handle_failed_bid
       end
     end
   end
@@ -42,6 +41,54 @@ class BidsController < ApplicationController
     @auction = Auction.select(:id, :seller_id, :starting_price, :minimum_selling_price, :ends_at, :completed_at)
                       .lock('FOR UPDATE') # Lock the auction record to prevent race conditions
                       .find(params[:auction_id])
+  end
+
+  def build_bid
+    current_user.bids.build(
+      bid_params.merge(auction: @auction)
+    )
+  end
+
+  def can_place_bid?
+    return false if @auction.seller == current_user
+    return false if @auction.ended?
+
+    true
+  end
+
+  def handle_successful_bid
+    AutoBidProcessor.new(@auction).process
+    respond_to_successful_bid
+  end
+
+  def handle_failed_bid
+    respond_to_failed_bid
+  end
+
+  def respond_to_successful_bid
+    respond_to do |format|
+      format.html { redirect_to @auction, notice: 'Bid was successfully placed.' }
+      format.turbo_stream { head :ok }
+    end
+  end
+
+  def respond_to_failed_bid
+    respond_to do |format|
+      format.html { redirect_to @auction, alert: @bid.errors.full_messages.to_sentence }
+      format.turbo_stream { flash.now[:alert] = @bid.errors.full_messages.to_sentence }
+    end
+  end
+
+  def render_turbo_stream_response
+    render turbo_stream: [
+      turbo_stream.update('flash_messages', partial: 'shared/flash_messages'),
+      turbo_stream.replace("auction_#{@auction.id}_bid_actions",
+                           partial: 'auctions/bid_actions',
+                           locals: { auction: @auction }),
+      turbo_stream.prepend("auction_#{@auction.id}_bids",
+                           partial: 'bids/bid',
+                           locals: { bid: @bid })
+    ]
   end
 
   def bid_params

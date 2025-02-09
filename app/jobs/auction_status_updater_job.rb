@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Background job responsible for updating auction statuses.
+# Periodically checks and updates the status of active auctions.
 class AuctionStatusUpdaterJob < ApplicationJob
   queue_as :default
 

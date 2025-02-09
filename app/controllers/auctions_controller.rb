@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Controller responsible for managing auction listings.
+# Handles CRUD operations for auctions including creation, viewing, updating, and deletion.
 class AuctionsController < ApplicationController
   before_action :authenticate_user!, except: %i[index show]
   before_action :set_auction, only: %i[show edit update destroy]

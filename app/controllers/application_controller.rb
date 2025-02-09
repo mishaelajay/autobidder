@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Base controller class that all other controllers inherit from.
+# Handles common functionality like authentication and authorization.
 class ApplicationController < ActionController::Base
   before_action :authenticate_user!
   before_action :configure_permitted_parameters, if: :devise_controller?
