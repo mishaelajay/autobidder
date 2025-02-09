@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 class Auction < ApplicationRecord
   belongs_to :seller, class_name: 'User'
   belongs_to :winning_bid, class_name: 'Bid', optional: true
-  
+
   has_many :bids, dependent: :destroy
   has_many :bidders, through: :bids, source: :user
   has_many :auto_bids, dependent: :destroy
@@ -23,7 +25,7 @@ class Auction < ApplicationRecord
   scope :won, -> { ended.joins(:bids).where('bids.amount >= auctions.minimum_selling_price') }
   scope :unsold, -> { ended.left_joins(:bids).where('bids.id IS NULL OR bids.amount < auctions.minimum_selling_price') }
 
-  broadcasts_to ->(auction) { [auction, "bids"] }
+  broadcasts_to ->(auction) { [auction, 'bids'] }
 
   def active?
     !ended? && !completed?
@@ -60,9 +62,9 @@ class Auction < ApplicationRecord
   private
 
   def ends_at_must_be_future
-    if ends_at.present? && ends_at <= Time.current
-      errors.add(:ends_at, "must be in the future")
-    end
+    return unless ends_at.present? && ends_at <= Time.current
+
+    errors.add(:ends_at, 'must be in the future')
   end
 
   def schedule_completion_job
@@ -82,4 +84,4 @@ class Auction < ApplicationRecord
     else 25.00
     end
   end
-end 
+end

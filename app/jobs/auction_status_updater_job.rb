@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AuctionStatusUpdaterJob < ApplicationJob
   queue_as :default
 
@@ -23,4 +25,4 @@ class AuctionStatusUpdaterJob < ApplicationJob
       AuctionMailer.auction_ended_without_winner_notification(auction.seller, auction).deliver_later
     end
   end
-end 
+end

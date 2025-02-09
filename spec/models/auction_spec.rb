@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe Auction, type: :model do
@@ -15,7 +17,7 @@ RSpec.describe Auction, type: :model do
     it { should validate_presence_of(:starting_price) }
     it { should validate_presence_of(:minimum_selling_price) }
     it { should validate_presence_of(:ends_at) }
-    
+
     it { should validate_numericality_of(:starting_price).is_greater_than_or_equal_to(0) }
     it { should validate_numericality_of(:minimum_selling_price).is_greater_than_or_equal_to(0) }
   end
@@ -33,7 +35,7 @@ RSpec.describe Auction, type: :model do
       it 'is invalid when ends_at is in the past' do
         auction.ends_at = 1.day.ago
         expect(auction).not_to be_valid
-        expect(auction.errors[:ends_at]).to include("must be in the future")
+        expect(auction.errors[:ends_at]).to include('must be in the future')
       end
     end
   end
@@ -139,7 +141,7 @@ RSpec.describe Auction, type: :model do
     describe '#minimum_next_bid' do
       it 'calculates correct increment based on current price' do
         auction.save!
-        
+
         {
           0.50 => 0.05,    # 0-0.99
           2.00 => 0.25,    # 1-4.99
@@ -161,13 +163,13 @@ RSpec.describe Auction, type: :model do
     describe 'after_create' do
       it 'schedules completion job' do
         auction.ends_at = 1.day.from_now
-        
+
         expect(CompleteAuctionJob).to receive(:set)
           .with(hash_including(wait: be_within(1.second).of(1.day)))
           .and_return(double(perform_later: true))
-        
+
         auction.save!
       end
     end
   end
-end 
+end

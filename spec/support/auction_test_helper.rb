@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AuctionTestHelper
   def create_test_auction(user, options = {})
     Auction.create!({
@@ -25,4 +27,4 @@ module AuctionTestHelper
       maximum_amount: max_amount
     )
   end
-end 
+end

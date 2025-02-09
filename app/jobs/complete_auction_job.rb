@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CompleteAuctionJob < ApplicationJob
   queue_as :default
 
@@ -8,9 +10,9 @@ class CompleteAuctionJob < ApplicationJob
     ActiveRecord::Base.transaction do
       # Find the winning bid (highest amount)
       winning_bid = auction.bids
-        .includes(:user)
-        .order(amount: :desc)
-        .first
+                           .includes(:user)
+                           .order(amount: :desc)
+                           .first
 
       # Update auction status and winner
       auction.update!(
@@ -21,18 +23,18 @@ class CompleteAuctionJob < ApplicationJob
       if winning_bid
         # Notify winner
         AuctionMailer.winner_notification(winning_bid.user, auction)
-          .deliver_later
+                     .deliver_later
 
         # Notify seller
         AuctionMailer.seller_auction_completed(auction.seller, auction, winning_bid)
-          .deliver_later
+                     .deliver_later
 
         # Notify external system about auction completion
         notify_external_system(auction, winning_bid)
       else
         # Notify seller about no winner
         AuctionMailer.seller_auction_no_winner(auction.seller, auction)
-          .deliver_later
+                     .deliver_later
 
         # Notify external system about auction with no winner
         notify_external_system(auction, nil)
@@ -51,4 +53,4 @@ class CompleteAuctionJob < ApplicationJob
       completed_at: auction.completed_at
     )
   end
-end 
+end

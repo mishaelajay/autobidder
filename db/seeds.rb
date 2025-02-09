@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This file should ensure the existence of records required to run the application in every environment (production,
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
@@ -9,7 +11,7 @@
 #   end
 
 # Create test users
-puts "Creating users..."
+puts 'Creating users...'
 
 seller = User.create!(
   email: 'seller@example.com',
@@ -32,44 +34,44 @@ bidder2 = User.create!(
   name: 'Test Bidder 2'
 )
 
-puts "Creating auctions..."
+puts 'Creating auctions...'
 
 # Create active auctions
 3.times do |i|
   auction = Auction.create!(
     seller: seller,
     title: "Active Auction #{i + 1}",
-    description: "This is a test auction with some interesting items up for bidding.",
+    description: 'This is a test auction with some interesting items up for bidding.',
     starting_price: rand(10..50),
     minimum_selling_price: rand(100..500),
     ends_at: rand(1..7).days.from_now
   )
-  
+
   puts "Created auction: #{auction.title}"
-  
+
   # Add some initial bids
-  if rand > 0.5
-    Bid.create!(
-      user: bidder1,
-      auction: auction,
-      amount: auction.starting_price + rand(10..20)
-    )
-    
-    if rand > 0.5
-      Bid.create!(
-        user: bidder2,
-        auction: auction,
-        amount: auction.current_price + rand(10..20)
-      )
-    end
-  end
+  next unless rand > 0.5
+
+  Bid.create!(
+    user: bidder1,
+    auction: auction,
+    amount: auction.starting_price + rand(10..20)
+  )
+
+  next unless rand > 0.5
+
+  Bid.create!(
+    user: bidder2,
+    auction: auction,
+    amount: auction.current_price + rand(10..20)
+  )
 end
 
 # Create an auction that's ending soon
 ending_soon = Auction.create!(
   seller: seller,
-  title: "Ending Soon Auction",
-  description: "Quick! This auction is ending very soon!",
+  title: 'Ending Soon Auction',
+  description: 'Quick! This auction is ending very soon!',
   starting_price: 25.00,
   minimum_selling_price: 100.00,
   ends_at: 30.minutes.from_now
@@ -98,10 +100,10 @@ AutoBid.create!(
 )
 
 puts "\nSeeding completed!"
-puts "Test accounts created:"
-puts "Seller: seller@example.com / password123"
-puts "Bidder 1: bidder1@example.com / password123"
-puts "Bidder 2: bidder2@example.com / password123"
+puts 'Test accounts created:'
+puts 'Seller: seller@example.com / password123'
+puts 'Bidder 1: bidder1@example.com / password123'
+puts 'Bidder 2: bidder2@example.com / password123'
 puts "\nCreated #{Auction.count} auctions"
 puts "Created #{Bid.count} bids"
 puts "Created #{AutoBid.count} auto bids"

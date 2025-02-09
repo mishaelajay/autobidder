@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe AutoBid, type: :model do
@@ -25,7 +27,7 @@ RSpec.describe AutoBid, type: :model do
       it 'is invalid when auction has ended' do
         auction.update!(ends_at: 1.hour.ago)
         expect(auto_bid).not_to be_valid
-        expect(auto_bid.errors[:base]).to include("Cannot set auto bid on ended auction")
+        expect(auto_bid.errors[:base]).to include('Cannot set auto bid on ended auction')
       end
     end
 
@@ -37,7 +39,7 @@ RSpec.describe AutoBid, type: :model do
       it 'is invalid when bidder is the seller' do
         auto_bid.user = seller
         expect(auto_bid).not_to be_valid
-        expect(auto_bid.errors[:base]).to include("Cannot auto bid on your own auction")
+        expect(auto_bid.errors[:base]).to include('Cannot auto bid on your own auction')
       end
     end
 
@@ -52,7 +54,7 @@ RSpec.describe AutoBid, type: :model do
         allow(auction).to receive(:current_price).and_return(100)
         auto_bid.maximum_amount = 90
         expect(auto_bid).not_to be_valid
-        expect(auto_bid.errors[:maximum_amount]).to include("must be greater than current price")
+        expect(auto_bid.errors[:maximum_amount]).to include('must be greater than current price')
       end
     end
 
@@ -64,7 +66,7 @@ RSpec.describe AutoBid, type: :model do
       it 'is invalid when user already has an auto bid for the auction' do
         create(:auto_bid, user: bidder, auction: auction)
         expect(auto_bid).not_to be_valid
-        expect(auto_bid.errors[:base]).to include("You already have an auto bid for this auction")
+        expect(auto_bid.errors[:base]).to include('You already have an auto bid for this auction')
       end
     end
   end
@@ -75,9 +77,9 @@ RSpec.describe AutoBid, type: :model do
         expect(AutoBidProcessor).to receive(:new)
           .with(auction)
           .and_return(double(process: true))
-        
+
         auto_bid.save!
       end
     end
   end
-end 
+end

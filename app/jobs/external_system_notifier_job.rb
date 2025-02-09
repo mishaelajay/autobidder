@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ExternalSystemNotifierJob < ApplicationJob
   queue_as :external_notifications
   retry_on StandardError, wait: :exponentially_longer, attempts: 5
@@ -16,8 +18,8 @@ class ExternalSystemNotifierJob < ApplicationJob
       }
     )
 
-    unless response.status.success?
-      raise "External system notification failed: #{response.status} - #{response.body}"
-    end
+    return if response.status.success?
+
+    raise "External system notification failed: #{response.status} - #{response.body}"
   end
-end 
+end

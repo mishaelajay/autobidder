@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
@@ -14,16 +16,16 @@ class User < ApplicationRecord
   has_many :bidded_auctions, through: :bids, source: :auction
   has_many :auto_bids, dependent: :destroy
   has_many :won_auctions, class_name: 'Auction', foreign_key: 'winning_bidder_id'
-  
+
   validates :name, presence: true
 
-  scope :active_sellers, -> { 
+  scope :active_sellers, lambda {
     joins(:auctions)
       .where('auctions.ends_at > ?', Time.current)
-      .distinct 
+      .distinct
   }
 
-  scope :active_bidders, -> {
+  scope :active_bidders, lambda {
     joins(:bids)
       .joins('INNER JOIN auctions ON bids.auction_id = auctions.id')
       .where('auctions.ends_at > ?', Time.current)
@@ -41,4 +43,4 @@ class User < ApplicationRecord
   def highest_bid_for(auction)
     bids.where(auction: auction).order(amount: :desc).first
   end
-end 
+end

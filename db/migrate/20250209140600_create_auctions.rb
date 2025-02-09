@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateAuctions < ActiveRecord::Migration[7.0]
   def change
     create_table :auctions do |t|
@@ -9,7 +11,7 @@ class CreateAuctions < ActiveRecord::Migration[7.0]
       t.references :seller, null: false, foreign_key: { to_table: :users }
       t.timestamps
     end
-    
+
     add_index :auctions, :ends_at
   end
 end

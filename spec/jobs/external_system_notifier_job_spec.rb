@@ -1,17 +1,19 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe ExternalSystemNotifierJob, type: :job do
   include ActiveJob::TestHelper
 
   let(:event) { 'auction_completed' }
-  let(:payload) { 
+  let(:payload) do
     {
       auction_id: 1,
       winner_id: 2,
       winning_amount: 100.00,
       completed_at: Time.current
     }
-  }
+  end
 
   before do
     allow(Rails.configuration).to receive(:external_api_endpoint)
@@ -35,9 +37,9 @@ RSpec.describe ExternalSystemNotifierJob, type: :job do
       end
 
       it 'sends the notification to the external system' do
-        perform_enqueued_jobs { 
-          described_class.perform_later(event: event, **payload) 
-        }
+        perform_enqueued_jobs do
+          described_class.perform_later(event: event, **payload)
+        end
 
         expect(WebMock).to have_requested(:post, Rails.configuration.external_api_endpoint)
           .with(body: hash_including(expected_request_body))
@@ -51,19 +53,19 @@ RSpec.describe ExternalSystemNotifierJob, type: :job do
       end
 
       it 'raises an error' do
-        expect {
-          perform_enqueued_jobs {
+        expect do
+          perform_enqueued_jobs do
             described_class.perform_later(event: event, **payload)
-          }
-        }.to raise_error(/External system notification failed: 500/)
+          end
+        end.to raise_error(/External system notification failed: 500/)
       end
 
       it 'retries the job' do
-        expect {
-          perform_enqueued_jobs {
+        expect do
+          perform_enqueued_jobs do
             described_class.perform_later(event: event, **payload)
-          }
-        }.to have_performed_job(described_class)
+          end
+        end.to have_performed_job(described_class)
           .exactly(:once)
           .with(event: event, **payload)
       end
@@ -76,14 +78,14 @@ RSpec.describe ExternalSystemNotifierJob, type: :job do
       end
 
       it 'retries the job' do
-        expect {
-          perform_enqueued_jobs {
+        expect do
+          perform_enqueued_jobs do
             described_class.perform_later(event: event, **payload)
-          }
-        }.to have_performed_job(described_class)
+          end
+        end.to have_performed_job(described_class)
           .exactly(:once)
           .with(event: event, **payload)
       end
     end
   end
-end 
+end

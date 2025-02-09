@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AutoBidsController < ApplicationController
   before_action :set_auction
 
@@ -28,4 +30,4 @@ class AutoBidsController < ApplicationController
   def auto_bid_params
     params.require(:auto_bid).permit(:maximum_amount)
   end
-end 
+end

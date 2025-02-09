@@ -1,4 +1,6 @@
-require "active_support/core_ext/integer/time"
+# frozen_string_literal: true
+
+require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -19,13 +21,13 @@ Rails.application.configure do
 
   # Enable/disable caching. By default caching is disabled.
   # Run rails dev:cache to toggle caching.
-  if Rails.root.join("tmp/caching-dev.txt").exist?
+  if Rails.root.join('tmp/caching-dev.txt').exist?
     config.action_controller.perform_caching = true
     config.action_controller.enable_fragment_cache_logging = true
 
     config.cache_store = :memory_store
     config.public_file_server.headers = {
-      "Cache-Control" => "public, max-age=#{2.days.to_i}"
+      'Cache-Control' => "public, max-age=#{2.days.to_i}"
     }
   else
     config.action_controller.perform_caching = false
@@ -76,14 +78,14 @@ Rails.application.configure do
 
   # Configure default URL options for ActionMailer
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
-  
+
   # Temporarily disable email delivery
   config.action_mailer.perform_deliveries = false
-  
+
   # Comment out or remove letter_opener configuration
   # config.action_mailer.delivery_method = :letter_opener
 
   # Action Cable configuration
-  config.action_cable.url = "ws://localhost:3000/cable"
-  config.action_cable.allowed_request_origins = [ "http://localhost:3000", /http:\/\/localhost:*/ ]
+  config.action_cable.url = 'ws://localhost:3000/cable'
+  config.action_cable.allowed_request_origins = ['http://localhost:3000', %r{http://localhost:*}]
 end

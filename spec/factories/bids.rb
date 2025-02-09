@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :bid do
     association :user
     association :auction
-    
+
     amount { auction.minimum_next_bid }
 
     trait :for_ended_auction do
@@ -17,4 +19,4 @@ FactoryBot.define do
       end
     end
   end
-end 
+end

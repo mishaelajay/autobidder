@@ -1,20 +1,22 @@
+# frozen_string_literal: true
+
 class BidsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_auction, only: [:create]
 
   def index
     @bids = current_user.bids
-      .joins(:auction)
-      .includes(:auction)  # Keep the eager loading for auction associations
-      .select(
-        'bids.id',
-        'bids.amount',
-        'bids.created_at',
-        'bids.auction_id',
-        'auctions.title as auction_title'
-      )
-      .order('bids.created_at DESC')
-      .page(params[:page])
+                        .joins(:auction)
+                        .includes(:auction) # Keep the eager loading for auction associations
+                        .select(
+                          'bids.id',
+                          'bids.amount',
+                          'bids.created_at',
+                          'bids.auction_id',
+                          'auctions.title as auction_title'
+                        )
+                        .order('bids.created_at DESC')
+                        .page(params[:page])
   end
 
   def create
@@ -38,11 +40,11 @@ class BidsController < ApplicationController
 
   def set_auction
     @auction = Auction.select(:id, :seller_id, :starting_price, :minimum_selling_price, :ends_at, :completed_at)
-      .lock("FOR UPDATE")  # Lock the auction record to prevent race conditions
-      .find(params[:auction_id])
+                      .lock('FOR UPDATE') # Lock the auction record to prevent race conditions
+                      .find(params[:auction_id])
   end
 
   def bid_params
     params.require(:bid).permit(:amount)
   end
-end 
+end

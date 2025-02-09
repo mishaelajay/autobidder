@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ProcessAutoBidsJob < ApplicationJob
   queue_as :default
 
@@ -9,4 +11,4 @@ class ProcessAutoBidsJob < ApplicationJob
   rescue ActiveRecord::RecordNotFound => e
     Rails.logger.error "Auction #{auction_id} not found: #{e.message}"
   end
-end 
+end

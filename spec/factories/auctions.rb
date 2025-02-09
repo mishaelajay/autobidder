@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :auction do
     association :seller, factory: :user
-    
+
     sequence(:title) { |n| "Auction #{n}" }
-    description { "A detailed description of the item" }
+    description { 'A detailed description of the item' }
     starting_price { 10.00 }
     minimum_selling_price { 100.00 }
     ends_at { 1.week.from_now }
@@ -23,7 +25,7 @@ FactoryBot.define do
     trait :completed do
       ended
       completed_at { Time.current }
-      
+
       after(:create) do |auction|
         winning_bid = create(:bid, auction: auction)
         auction.update!(winning_bid: winning_bid)
@@ -36,4 +38,4 @@ FactoryBot.define do
       ends_at { 1.day.ago }
     end
   end
-end 
+end

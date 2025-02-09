@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe CompleteAuctionJob, type: :job do
@@ -6,16 +8,16 @@ RSpec.describe CompleteAuctionJob, type: :job do
   let(:seller) { create(:user) }
   let(:bidder) { create(:user) }
   let(:auction) { create(:auction, seller: seller, ends_at: 1.hour.ago) }
-  
+
   describe '#perform' do
     context 'when auction has a winning bid' do
       let!(:winning_bid) { create(:bid, auction: auction, user: bidder, amount: 100) }
-      
+
       it 'completes the auction with the winning bid' do
-        expect {
+        expect do
           perform_enqueued_jobs { described_class.perform_later(auction.id) }
-        }.to change { auction.reload.completed? }.from(false).to(true)
-          .and change { auction.winning_bid_id }.to(winning_bid.id)
+        end.to change { auction.reload.completed? }.from(false).to(true)
+                                                   .and change { auction.winning_bid_id }.to(winning_bid.id)
       end
 
       it 'sends notifications' do
@@ -46,9 +48,9 @@ RSpec.describe CompleteAuctionJob, type: :job do
 
     context 'when auction has no bids' do
       it 'completes the auction without a winning bid' do
-        expect {
+        expect do
           perform_enqueued_jobs { described_class.perform_later(auction.id) }
-        }.to change { auction.reload.completed? }.from(false).to(true)
+        end.to change { auction.reload.completed? }.from(false).to(true)
       end
 
       it 'notifies seller about no winner' do
@@ -99,4 +101,4 @@ RSpec.describe CompleteAuctionJob, type: :job do
       end
     end
   end
-end 
+end

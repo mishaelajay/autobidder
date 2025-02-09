@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AutoBidProcessor
   def initialize(auction)
     @auction = auction
@@ -15,7 +17,7 @@ class AutoBidProcessor
     current_amount = current_highest_bid ? current_highest_bid['amount'] : @auction.starting_price
     next_minimum_bid = calculate_next_minimum_bid(current_amount)
     bid_amount = [next_minimum_bid, next_auto_bid['maximum_amount']].min
-    
+
     Bid.create!(
       user_id: next_auto_bid['auto_bid_user_id'],
       auction_id: @auction.id,
@@ -26,8 +28,8 @@ class AutoBidProcessor
   private
 
   def should_process?
-    @auction.active? && 
-    @auction.auto_bids.where('maximum_amount > ?', @auction.current_price).exists?
+    @auction.active? &&
+      @auction.auto_bids.where('maximum_amount > ?', @auction.current_price).exists?
   end
 
   def fetch_bids
@@ -35,13 +37,13 @@ class AutoBidProcessor
 
     # Use a single query to fetch both the current highest bid and the next auto bid
     bids = @auction.bids
-      .select('bids.user_id, bids.amount, auto_bids.id AS auto_bid_id, auto_bids.user_id AS auto_bid_user_id, auto_bids.maximum_amount')
-      .joins('LEFT JOIN auto_bids ON auto_bids.auction_id = bids.auction_id')
-      .where('auto_bids.maximum_amount > ? AND auto_bids.user_id != bids.user_id', current_price)
-      .order('bids.amount DESC, auto_bids.maximum_amount DESC, auto_bids.created_at ASC')
-      .lock('FOR UPDATE SKIP LOCKED')
-      .limit(1)
-      .first
+                   .select('bids.user_id, bids.amount, auto_bids.id AS auto_bid_id, auto_bids.user_id AS auto_bid_user_id, auto_bids.maximum_amount')
+                   .joins('LEFT JOIN auto_bids ON auto_bids.auction_id = bids.auction_id')
+                   .where('auto_bids.maximum_amount > ? AND auto_bids.user_id != bids.user_id', current_price)
+                   .order('bids.amount DESC, auto_bids.maximum_amount DESC, auto_bids.created_at ASC')
+                   .lock('FOR UPDATE SKIP LOCKED')
+                   .limit(1)
+                   .first
 
     current_highest_bid = bids&.slice(:user_id, :amount)
     next_auto_bid = bids&.slice(:auto_bid_id, :auto_bid_user_id, :maximum_amount)
@@ -65,4 +67,4 @@ class AutoBidProcessor
     else 25.00
     end
   end
-end 
+end

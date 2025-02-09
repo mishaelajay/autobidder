@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe Bid, type: :model do
@@ -25,7 +27,7 @@ RSpec.describe Bid, type: :model do
       it 'is invalid when auction has ended' do
         auction.update!(ends_at: 1.hour.ago)
         expect(bid).not_to be_valid
-        expect(bid.errors[:base]).to include("Cannot bid on ended auction")
+        expect(bid.errors[:base]).to include('Cannot bid on ended auction')
       end
     end
 
@@ -37,7 +39,7 @@ RSpec.describe Bid, type: :model do
       it 'is invalid when bidder is the seller' do
         bid.user = seller
         expect(bid).not_to be_valid
-        expect(bid.errors[:base]).to include("Cannot bid on your own auction")
+        expect(bid.errors[:base]).to include('Cannot bid on your own auction')
       end
     end
 
@@ -61,7 +63,7 @@ RSpec.describe Bid, type: :model do
         expect(AutoBidProcessor).to receive(:new)
           .with(auction)
           .and_return(double(process: true))
-        
+
         bid.save!
       end
 
@@ -70,7 +72,7 @@ RSpec.describe Bid, type: :model do
         expect(BidMailer).to receive(:outbid_notification)
           .with(previous_bid)
           .and_return(double(deliver_later: true))
-        
+
         bid.save!
       end
     end
@@ -81,4 +83,4 @@ RSpec.describe Bid, type: :model do
       expect(Bid.default_per_page).to eq(25)
     end
   end
-end 
+end
