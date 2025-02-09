@@ -123,3 +123,4 @@ Monitor background jobs at http://localhost:3000/sidekiq (requires authenticatio
 ### Email Delivery
 
 In development, emails are caught by the `letter_opener` gem and can be viewed in the browser.
+I have disabled letter_opener since it can get quite annoying when an autobid is outbidding you. You can enable the same to see the emails.
