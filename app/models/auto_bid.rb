@@ -7,7 +7,7 @@ class AutoBid < ApplicationRecord
   belongs_to :auction
 
   validates :maximum_amount, presence: true, numericality: { greater_than: 0 }
-  validates :user_id, uniqueness: { scope: :auction_id, message: 'already has an auto bid for this auction' }
+  validates :user_id, uniqueness: { scope: :auction_id, message: -> { I18n.t('auto_bids.errors.already_exists') } }
 
   validate :cannot_auto_bid_on_own_auction, if: -> { user.present? && auction.present? }
   validate :maximum_amount_must_be_greater_than_current_price, if: -> { maximum_amount.present? && auction.present? }

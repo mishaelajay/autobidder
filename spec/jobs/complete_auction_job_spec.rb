@@ -8,6 +8,18 @@ RSpec.describe CompleteAuctionJob do
   let(:seller) { create(:user) }
   let(:bidder) { create(:user) }
   let(:auction) { create(:auction, seller: seller, ends_at: 1.hour.ago) }
+  let(:mailer) { instance_spy(ActionMailer::MessageDelivery) }
+  let(:auction_mailer) do
+    class_spy(AuctionMailer, winner_notification: mailer,
+                             seller_auction_completed: mailer,
+                             seller_auction_no_winner: mailer)
+  end
+  let(:notifier_job) { class_spy(ExternalSystemNotifierJob) }
+
+  before do
+    stub_const('AuctionMailer', auction_mailer)
+    stub_const('ExternalSystemNotifierJob', notifier_job)
+  end
 
   describe '#perform' do
     context 'when auction has a winning bid' do
@@ -17,32 +29,37 @@ RSpec.describe CompleteAuctionJob do
         expect do
           perform_enqueued_jobs { described_class.perform_later(auction.id) }
         end.to change { auction.reload.completed? }.from(false).to(true)
-                                                   .and change(auction, :winning_bid_id).to(winning_bid.id)
+           .and change(auction, :winning_bid_id).to(winning_bid.id)
       end
 
-      it 'sends notifications' do
-        expect(AuctionMailer).to receive(:winner_notification)
-          .with(bidder, auction)
-          .and_return(double(deliver_later: true))
-
-        expect(AuctionMailer).to receive(:seller_auction_completed)
-          .with(seller, auction, winning_bid)
-          .and_return(double(deliver_later: true))
-
+      it 'sends winner notification' do
         perform_enqueued_jobs { described_class.perform_later(auction.id) }
+
+        expect(auction_mailer).to have_received(:winner_notification)
+          .with(bidder, auction)
+      end
+
+      it 'sends seller completion notification' do
+        perform_enqueued_jobs { described_class.perform_later(auction.id) }
+
+        expect(auction_mailer).to have_received(:seller_auction_completed)
+          .with(seller, auction, winning_bid)
       end
 
       it 'notifies external system' do
-        expect(ExternalSystemNotifierJob).to receive(:perform_later)
+        completion_time = Time.current
+        allow(Time).to receive(:current).and_return(completion_time)
+
+        perform_enqueued_jobs { described_class.perform_later(auction.id) }
+
+        expect(notifier_job).to have_received(:perform_later)
           .with(
             event: 'auction_completed',
             auction_id: auction.id,
             winner_id: bidder.id,
             winning_amount: winning_bid.amount,
-            completed_at: anything
+            completed_at: completion_time
           )
-
-        perform_enqueued_jobs { described_class.perform_later(auction.id) }
       end
     end
 
@@ -54,37 +71,50 @@ RSpec.describe CompleteAuctionJob do
       end
 
       it 'notifies seller about no winner' do
-        expect(AuctionMailer).to receive(:seller_auction_no_winner)
-          .with(seller, auction)
-          .and_return(double(deliver_later: true))
-
         perform_enqueued_jobs { described_class.perform_later(auction.id) }
+
+        expect(auction_mailer).to have_received(:seller_auction_no_winner)
+          .with(seller, auction)
       end
 
       it 'notifies external system about no winner' do
-        expect(ExternalSystemNotifierJob).to receive(:perform_later)
+        completion_time = Time.current
+        allow(Time).to receive(:current).and_return(completion_time)
+
+        perform_enqueued_jobs { described_class.perform_later(auction.id) }
+
+        expect(notifier_job).to have_received(:perform_later)
           .with(
             event: 'auction_completed',
             auction_id: auction.id,
             winner_id: nil,
             winning_amount: nil,
-            completed_at: anything
+            completed_at: completion_time
           )
-
-        perform_enqueued_jobs { described_class.perform_later(auction.id) }
       end
     end
 
     context 'when auction is already completed' do
       before { auction.update!(completed_at: Time.current) }
 
-      it 'does not process the auction again' do
-        expect(AuctionMailer).not_to receive(:winner_notification)
-        expect(AuctionMailer).not_to receive(:seller_auction_completed)
-        expect(AuctionMailer).not_to receive(:seller_auction_no_winner)
-        expect(ExternalSystemNotifierJob).not_to receive(:perform_later)
-
+      it 'does not send winner notification' do
         perform_enqueued_jobs { described_class.perform_later(auction.id) }
+        expect(auction_mailer).not_to have_received(:winner_notification)
+      end
+
+      it 'does not send seller completion notification' do
+        perform_enqueued_jobs { described_class.perform_later(auction.id) }
+        expect(auction_mailer).not_to have_received(:seller_auction_completed)
+      end
+
+      it 'does not send no-winner notification' do
+        perform_enqueued_jobs { described_class.perform_later(auction.id) }
+        expect(auction_mailer).not_to have_received(:seller_auction_no_winner)
+      end
+
+      it 'does not notify external system' do
+        perform_enqueued_jobs { described_class.perform_later(auction.id) }
+        expect(notifier_job).not_to have_received(:perform_later)
       end
     end
 
@@ -92,12 +122,14 @@ RSpec.describe CompleteAuctionJob do
       let(:auction) { create(:auction, seller: seller, ends_at: 1.hour.from_now) }
 
       it 'does not process the auction' do
-        expect(AuctionMailer).not_to receive(:winner_notification)
-        expect(AuctionMailer).not_to receive(:seller_auction_completed)
-        expect(AuctionMailer).not_to receive(:seller_auction_no_winner)
-        expect(ExternalSystemNotifierJob).not_to receive(:perform_later)
-
         perform_enqueued_jobs { described_class.perform_later(auction.id) }
+
+        aggregate_failures do
+          expect(auction_mailer).not_to have_received(:winner_notification)
+          expect(auction_mailer).not_to have_received(:seller_auction_completed)
+          expect(auction_mailer).not_to have_received(:seller_auction_no_winner)
+          expect(notifier_job).not_to have_received(:perform_later)
+        end
       end
     end
   end

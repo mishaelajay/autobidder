@@ -13,11 +13,12 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable,
          :trackable
 
-  has_many :auctions, foreign_key: :seller_id, dependent: :destroy
+  has_many :auctions, foreign_key: :seller_id, dependent: :destroy, inverse_of: :seller
   has_many :bids, dependent: :destroy
   has_many :bidded_auctions, through: :bids, source: :auction
   has_many :auto_bids, dependent: :destroy
-  has_many :won_auctions, class_name: 'Auction', foreign_key: 'winning_bidder_id'
+  has_many :won_auctions, class_name: 'Auction', foreign_key: 'winning_bidder_id',
+                          dependent: :nullify, inverse_of: :winning_bidder
 
   validates :name, presence: true
 

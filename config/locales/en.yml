@@ -29,3 +29,23 @@
 
 en:
   hello: "Hello world"
+  auctions:
+    create:
+      success: "Auction was successfully created."
+    update:
+      success: "Auction was successfully updated."
+    destroy:
+      success: "Auction was successfully destroyed."
+    unauthorized: "You are not authorized to perform this action."
+  
+  auto_bids:
+    create:
+      success: "Auto bid was successfully set."
+    destroy:
+      success: "Auto bid was successfully removed."
+    errors:
+      already_exists: "already has an auto bid for this auction"
+  
+  bids:
+    create:
+      success: "Bid was successfully placed."

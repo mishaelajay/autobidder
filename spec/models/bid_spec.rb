@@ -49,9 +49,14 @@ RSpec.describe Bid do
         expect(bid).to be_valid
       end
 
-      it 'is invalid when amount is less than minimum next bid' do
+      it 'is invalid when amount is below minimum next bid' do
         allow(auction).to receive(:minimum_next_bid).and_return(200)
         expect(bid).not_to be_valid
+      end
+
+      it 'has the correct error message when amount is too low' do
+        allow(auction).to receive(:minimum_next_bid).and_return(200)
+        bid.valid?
         expect(bid.errors[:amount]).to include("must be at least #{auction.minimum_next_bid}")
       end
     end
@@ -59,21 +64,27 @@ RSpec.describe Bid do
 
   describe 'callbacks' do
     describe 'after_create' do
-      it 'processes auto bids' do
-        expect(AutoBidProcessor).to receive(:new)
-          .with(auction)
-          .and_return(double(process: true))
+      let(:processor) { instance_spy(AutoBidProcessor, process: true) }
 
+      before do
+        allow(AutoBidProcessor).to receive(:new).with(auction).and_return(processor)
+      end
+
+      it 'processes auto bids' do
         bid.save!
+        expect(processor).to have_received(:process)
       end
 
       it 'notifies outbid users' do
+        mailer = instance_spy(ActionMailer::MessageDelivery)
         previous_bid = create(:bid, auction: auction, amount: 120)
-        expect(BidMailer).to receive(:outbid_notification)
+
+        allow(BidMailer).to receive(:outbid_notification)
           .with(previous_bid)
-          .and_return(double(deliver_later: true))
+          .and_return(mailer)
 
         bid.save!
+        expect(mailer).to have_received(:deliver_later)
       end
     end
   end

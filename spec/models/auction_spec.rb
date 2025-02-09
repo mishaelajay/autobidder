@@ -26,7 +26,7 @@ RSpec.describe Auction do
   end
 
   describe 'custom validations' do
-    context 'ends_at_must_be_future' do
+    context 'when validating ends_at must be future' do
       it 'is valid when ends_at is in the future' do
         auction.ends_at = 1.day.from_now
         expect(auction).to be_valid
@@ -35,6 +35,11 @@ RSpec.describe Auction do
       it 'is invalid when ends_at is in the past' do
         auction.ends_at = 1.day.ago
         expect(auction).not_to be_valid
+      end
+
+      it 'adds an error message when ends_at is in the past' do
+        auction.ends_at = 1.day.ago
+        auction.valid?
         expect(auction.errors[:ends_at]).to include('must be in the future')
       end
     end
@@ -161,14 +166,17 @@ RSpec.describe Auction do
 
   describe 'callbacks' do
     describe 'after_create' do
-      it 'schedules completion job' do
-        auction.ends_at = 1.day.from_now
+      let(:job_double) { instance_spy(JobDouble, perform_later: true) }
+      let(:complete_auction_job) { class_spy(CompleteAuctionJob, set: job_double) }
 
-        expect(CompleteAuctionJob).to receive(:set)
-          .with(hash_including(wait: be_within(1.second).of(1.day)))
-          .and_return(double(perform_later: true))
+      before do
+        stub_const('CompleteAuctionJob', complete_auction_job)
+      end
 
-        auction.save!
+      it 'schedules auction completion job' do
+        auction.save
+        expect(complete_auction_job).to have_received(:set).with(wait_until: auction.ends_at)
+        expect(job_double).to have_received(:perform_later).with(auction)
       end
     end
   end

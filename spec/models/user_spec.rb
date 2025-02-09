@@ -90,5 +90,50 @@ RSpec.describe User do
         expect(described_class.active_bidders).not_to include(non_bidder)
       end
     end
+
+    describe '.with_active_auctions' do
+      let(:user_with_active) { create(:user) }
+      let(:user_with_ended) { create(:user) }
+      let!(:active_auction) { create(:auction, :active, user: user_with_active) }
+      let!(:ended_auction) { create(:auction, :ended, user: user_with_ended) }
+
+      it 'includes users with active auctions' do
+        expect(described_class.with_active_auctions).to include(user_with_active)
+      end
+
+      it 'excludes users with only ended auctions' do
+        expect(described_class.with_active_auctions).not_to include(user_with_ended)
+      end
+
+      it 'returns unique users' do
+        create(:auction, :active, user: user_with_active)
+        expect(described_class.with_active_auctions.count).to eq(1)
+      end
+    end
+
+    describe '.with_bids_on_active_auctions' do
+      let(:bidder_active) { create(:user) }
+      let(:bidder_ended) { create(:user) }
+      let(:active_auction) { create(:auction, :active) }
+      let(:ended_auction) { create(:auction, :ended) }
+
+      before do
+        create(:bid, user: bidder_active, auction: active_auction)
+        create(:bid, user: bidder_ended, auction: ended_auction)
+      end
+
+      it 'includes users with bids on active auctions' do
+        expect(described_class.with_bids_on_active_auctions).to include(bidder_active)
+      end
+
+      it 'excludes users with bids only on ended auctions' do
+        expect(described_class.with_bids_on_active_auctions).not_to include(bidder_ended)
+      end
+
+      it 'returns unique users' do
+        create(:bid, user: bidder_active, auction: active_auction)
+        expect(described_class.with_bids_on_active_auctions.count).to eq(1)
+      end
+    end
   end
 end

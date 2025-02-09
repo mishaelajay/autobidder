@@ -32,7 +32,7 @@ class AuctionsController < ApplicationController
     @auction = current_user.auctions.build(auction_params)
 
     if @auction.save
-      redirect_to @auction, notice: 'Auction was successfully created.'
+      redirect_to @auction, notice: t('.success')
     else
       render :new, status: :unprocessable_entity
     end
@@ -40,7 +40,7 @@ class AuctionsController < ApplicationController
 
   def update
     if @auction.update(auction_params)
-      redirect_to @auction, notice: 'Auction was successfully updated.'
+      redirect_to @auction, notice: t('.success')
     else
       render :edit, status: :ok
     end
@@ -48,7 +48,7 @@ class AuctionsController < ApplicationController
 
   def destroy
     @auction.destroy
-    redirect_to auctions_url, notice: 'Auction was successfully destroyed.'
+    redirect_to auctions_url, notice: t('.success')
   end
 
   private
@@ -60,7 +60,7 @@ class AuctionsController < ApplicationController
   def authorize_seller!
     return if @auction.seller == current_user
 
-    redirect_to auctions_path, alert: 'You are not authorized to perform this action.'
+    redirect_to auctions_path, alert: t('auctions.unauthorized')
   end
 
   def auction_params

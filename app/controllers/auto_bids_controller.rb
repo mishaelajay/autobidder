@@ -11,7 +11,7 @@ class AutoBidsController < ApplicationController
 
     if @auto_bid.save
       AutoBidProcessor.new(@auction).process
-      redirect_to @auction, notice: 'Auto bid was successfully set.'
+      redirect_to @auction, notice: t('.success')
     else
       redirect_to @auction, alert: @auto_bid.errors.full_messages.to_sentence
     end
@@ -20,7 +20,7 @@ class AutoBidsController < ApplicationController
   def destroy
     @auto_bid = current_user.auto_bids.find_by!(auction: @auction)
     @auto_bid.destroy
-    redirect_to @auction, notice: 'Auto bid was successfully removed.'
+    redirect_to @auction, notice: t('.success')
   end
 
   private

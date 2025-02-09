@@ -56,7 +56,7 @@ class BidsController < ApplicationController
 
   def respond_to_successful_bid
     respond_to do |format|
-      format.html { redirect_to @auction, notice: 'Bid was successfully placed.' }
+      format.html { redirect_to @auction, notice: t('.success') }
       format.turbo_stream { head :ok }
     end
   end
