@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Bid model representing a bid placed on an auction.
+# Handles bid validation, notification, and broadcasting updates.
 class Bid < ApplicationRecord
   paginates_per 25 # Set default pagination limit
 
@@ -43,17 +45,25 @@ class Bid < ApplicationRecord
   end
 
   def notify_outbid_users
-    # Get the latest bid for each user using a subquery
-    previous_bids = auction.bids
-                           .where.not(user_id: user_id)
-                           .where(
-                             id: auction.bids
-                               .select('MAX(id)')
-                               .group(:user_id)
-                           )
-                           .limit(100) # Limit to prevent overwhelming the system
+    previous_bids = find_previous_bids
+    send_outbid_notifications(previous_bids)
+  end
 
-    previous_bids.each do |bid|
+  def find_previous_bids
+    auction.bids
+           .where.not(user_id: user_id)
+           .where(id: latest_bids_subquery)
+           .limit(100)
+  end
+
+  def latest_bids_subquery
+    auction.bids
+           .select('MAX(id)')
+           .group(:user_id)
+  end
+
+  def send_outbid_notifications(bids)
+    bids.each do |bid|
       BidMailer.outbid_notification(bid)
                .deliver_later(wait: 30.seconds)
     end
@@ -65,20 +75,26 @@ class Bid < ApplicationRecord
 
   def broadcast_updates_to_auction
     stream = [auction, 'bids']
+    broadcast_price_update(stream)
+    broadcast_bid_actions(stream)
+    broadcast_new_bid(stream)
+  end
 
-    # Update current price
+  def broadcast_price_update(stream)
     broadcast_replace_to stream,
                          target: "auction_#{auction.id}_current_price",
                          partial: 'auctions/current_price',
                          locals: { auction: auction }
+  end
 
-    # Update bid actions
+  def broadcast_bid_actions(stream)
     broadcast_replace_to stream,
                          target: "auction_#{auction.id}_bid_actions",
                          partial: 'auctions/bid_actions',
                          locals: { auction: auction }
+  end
 
-    # Add the new bid to the history
+  def broadcast_new_bid(stream)
     broadcast_prepend_to stream,
                          target: "auction_#{auction.id}_bids",
                          partial: 'bids/bid',

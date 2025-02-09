@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# User model representing a registered user in the system.
+# Users can be both sellers (creating auctions) and bidders (placing bids).
 class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
@@ -32,7 +34,7 @@ class User < ApplicationRecord
       .distinct
   }
 
-  def has_auto_bid_for?(auction)
+  def auto_bid_for?(auction)
     auto_bids.exists?(auction: auction)
   end
 

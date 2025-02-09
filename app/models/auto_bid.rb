@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# AutoBid model representing automatic bidding settings for users.
+# Allows users to set maximum bid amounts and automatically outbid others up to that amount.
 class AutoBid < ApplicationRecord
   belongs_to :user
   belongs_to :auction

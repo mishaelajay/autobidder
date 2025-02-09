@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Auction model representing items being auctioned in the system.
+# Handles auction lifecycle, bidding rules, and completion logic.
 class Auction < ApplicationRecord
   belongs_to :seller, class_name: 'User'
   belongs_to :winning_bid, class_name: 'Bid', optional: true
@@ -73,15 +75,21 @@ class Auction < ApplicationRecord
   end
 
   def calculate_increment(current_price)
-    case current_price
-    when 0..0.99 then 0.05
-    when 1..4.99 then 0.25
-    when 5..24.99 then 0.50
-    when 25..99.99 then 1.00
-    when 100..249.99 then 2.50
-    when 250..499.99 then 5.00
-    when 500..999.99 then 10.00
-    else 25.00
+    increment_rules.each do |range, increment|
+      return increment if range.include?(current_price)
     end
+    25.00 # Default increment for prices over 1000
+  end
+
+  def increment_rules
+    {
+      (0..0.99) => 0.05,
+      (1..4.99) => 0.25,
+      (5..24.99) => 0.50,
+      (25..99.99) => 1.00,
+      (100..249.99) => 2.50,
+      (250..499.99) => 5.00,
+      (500..999.99) => 10.00
+    }
   end
 end

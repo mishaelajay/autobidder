@@ -87,3 +87,5 @@ gem 'tailwindcss-rails', '~> 4.0'
 gem 'kaminari'
 
 gem 'rubocop', '~> 1.71'
+
+gem 'rails-controller-testing', '~> 1.0'
