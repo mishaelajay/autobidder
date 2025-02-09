@@ -7,18 +7,7 @@ class BidsController < ApplicationController
   before_action :set_auction, only: [:create]
 
   def index
-    @bids = current_user.bids
-                        .joins(:auction)
-                        .includes(:auction) # Keep the eager loading for auction associations
-                        .select(
-                          'bids.id',
-                          'bids.amount',
-                          'bids.created_at',
-                          'bids.auction_id',
-                          'auctions.title as auction_title'
-                        )
-                        .order('bids.created_at DESC')
-                        .page(params[:page])
+    @bids = fetch_user_bids
   end
 
   def create
@@ -93,5 +82,24 @@ class BidsController < ApplicationController
 
   def bid_params
     params.require(:bid).permit(:amount)
+  end
+
+  def fetch_user_bids
+    current_user.bids
+                .joins(:auction)
+                .includes(:auction)
+                .select(bid_select_fields)
+                .order('bids.created_at DESC')
+                .page(params[:page])
+  end
+
+  def bid_select_fields
+    [
+      'bids.id',
+      'bids.amount',
+      'bids.created_at',
+      'bids.auction_id',
+      'auctions.title as auction_title'
+    ]
   end
 end

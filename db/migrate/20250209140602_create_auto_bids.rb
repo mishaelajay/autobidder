@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Migration to create the auto_bids table.
+# Sets up automatic bidding functionality with maximum amounts and bid increments.
 class CreateAutoBids < ActiveRecord::Migration[7.0]
   def change
     create_table :auto_bids do |t|

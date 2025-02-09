@@ -1,56 +1,59 @@
 # frozen_string_literal: true
 
+# Background job responsible for completing auctions.
+# Handles the auction completion process including determining winners and notifying users.
 class CompleteAuctionJob < ApplicationJob
   queue_as :default
 
   def perform(auction_id)
-    auction = Auction.find(auction_id)
-    return if auction.completed? || !auction.ended?
+    @auction = Auction.find(auction_id)
+    return if @auction.completed?
 
     ActiveRecord::Base.transaction do
-      # Find the winning bid (highest amount)
-      winning_bid = auction.bids
-                           .includes(:user)
-                           .order(amount: :desc)
-                           .first
-
-      # Update auction status and winner
-      auction.update!(
-        completed_at: Time.current,
-        winning_bid_id: winning_bid&.id
-      )
-
-      if winning_bid
-        # Notify winner
-        AuctionMailer.winner_notification(winning_bid.user, auction)
-                     .deliver_later
-
-        # Notify seller
-        AuctionMailer.seller_auction_completed(auction.seller, auction, winning_bid)
-                     .deliver_later
-
-        # Notify external system about auction completion
-        notify_external_system(auction, winning_bid)
-      else
-        # Notify seller about no winner
-        AuctionMailer.seller_auction_no_winner(auction.seller, auction)
-                     .deliver_later
-
-        # Notify external system about auction with no winner
-        notify_external_system(auction, nil)
-      end
+      process_auction_completion
     end
   end
 
   private
 
-  def notify_external_system(auction, winning_bid)
-    ExternalSystemNotifierJob.perform_later(
-      event: 'auction_completed',
-      auction_id: auction.id,
-      winner_id: winning_bid&.user_id,
-      winning_amount: winning_bid&.amount,
-      completed_at: auction.completed_at
+  def process_auction_completion
+    update_auction_status
+    notify_participants if @auction.winning_bid.present?
+  end
+
+  def update_auction_status
+    @auction.update!(
+      completed_at: Time.current,
+      winning_bid: highest_bid,
+      winning_bidder: highest_bid&.user
     )
+  end
+
+  def notify_participants
+    notify_winner
+    notify_seller
+    notify_losing_bidders
+  end
+
+  def notify_winner
+    BidMailer.winning_bid_notification(@auction.winning_bid).deliver_later
+  end
+
+  def notify_seller
+    BidMailer.auction_completed_notification(@auction).deliver_later
+  end
+
+  def notify_losing_bidders
+    losing_bidders.each do |bidder|
+      BidMailer.auction_lost_notification(@auction, bidder).deliver_later
+    end
+  end
+
+  def highest_bid
+    @highest_bid ||= @auction.bids.order(amount: :desc).first
+  end
+
+  def losing_bidders
+    @auction.bidders.where.not(id: @auction.winning_bidder_id).distinct
   end
 end

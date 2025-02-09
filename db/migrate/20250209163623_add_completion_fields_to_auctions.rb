@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Migration to add auction completion tracking fields.
+# Adds fields for tracking completed auctions and their winning bids.
 class AddCompletionFieldsToAuctions < ActiveRecord::Migration[7.0]
   def change
     add_column :auctions, :completed_at, :datetime

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Background job responsible for scheduling auction completion jobs.
+# Identifies auctions that need to be completed and schedules their completion process.
 class ScheduleAuctionCompletionsJob < ApplicationJob
   queue_as :default
 

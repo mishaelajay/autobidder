@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Migration to add performance-optimizing indexes to auto_bids and bids tables.
+# Improves query performance for auto-bidding and bid history lookups.
 class AddIndexesToAutoBids < ActiveRecord::Migration[7.0]
   def change
     # Indexes for auto_bids table

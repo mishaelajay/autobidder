@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Migration to create the auctions table.
+# Sets up the core auction functionality with title, description, and pricing fields.
 class CreateAuctions < ActiveRecord::Migration[7.0]
   def change
     create_table :auctions do |t|

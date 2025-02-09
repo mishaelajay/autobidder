@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Background job responsible for processing automatic bids.
+# Handles the execution of auto-bids based on user configurations and auction status.
 class ProcessAutoBidsJob < ApplicationJob
   queue_as :default
 

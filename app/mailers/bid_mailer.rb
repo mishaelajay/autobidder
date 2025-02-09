@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Mailer responsible for sending bid-related email notifications.
+# Handles notifications for bid placement, winning bids, and auction completion.
 class BidMailer < ApplicationMailer
   def outbid_notification(user, auction)
     @user = user

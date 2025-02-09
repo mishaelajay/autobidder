@@ -10,6 +10,8 @@ require 'kaminari'
 Bundler.require(*Rails.groups)
 
 module Autobidder
+  # Main application configuration class.
+  # Handles application-wide settings and initialization.
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.1
