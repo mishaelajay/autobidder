@@ -73,4 +73,17 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Configure default URL options for ActionMailer
+  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+  
+  # Temporarily disable email delivery
+  config.action_mailer.perform_deliveries = false
+  
+  # Comment out or remove letter_opener configuration
+  # config.action_mailer.delivery_method = :letter_opener
+
+  # Action Cable configuration
+  config.action_cable.url = "ws://localhost:3000/cable"
+  config.action_cable.allowed_request_origins = [ "http://localhost:3000", /http:\/\/localhost:*/ ]
 end

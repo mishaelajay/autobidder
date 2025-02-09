@@ -1,0 +1,3 @@
+<%= render partial: "bids/bid", 
+            collection: auction.bids.order(created_at: :desc), 
+            locals: { current_user: current_user } %> 

@@ -1,0 +1,13 @@
+<h1>You've been outbid!</h1>
+
+<p>Hello <%= @user.name %>,</p>
+
+<p>Someone has placed a higher bid on "<%= @auction.title %>".</p>
+
+<p>Current highest bid: $<%= number_with_precision(@current_price, precision: 2) %></p>
+
+<p>
+  <%= link_to "View Auction", auction_url(@auction) %>
+</p>
+
+<p>The auction ends at: <%= @auction.ends_at.strftime("%B %d, %Y at %I:%M %p %Z") %></p> 

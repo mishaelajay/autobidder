@@ -1,0 +1,4 @@
+auction_status_updater:
+  cron: '*/5 * * * *'  # Runs every 5 minutes
+  class: AuctionStatusUpdaterJob
+  queue: default 

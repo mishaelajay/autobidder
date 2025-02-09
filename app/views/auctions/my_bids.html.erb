@@ -1,0 +1,37 @@
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold text-gray-900 mb-8">My Bids</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <% @auctions.each do |auction| %>
+      <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-200">
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <h2 class="text-xl font-bold text-gray-900 truncate"><%= auction.title %></h2>
+            <span class="<%= auction.active? ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %> px-2 py-1 rounded-full text-xs font-medium">
+              <%= auction.active? ? "Active" : "Ended" %>
+            </span>
+          </div>
+
+          <div class="space-y-2 mb-4">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-500">Your Highest Bid:</span>
+              <span class="text-lg font-semibold text-indigo-600">
+                <%= number_to_currency(auction.bids.where(user: current_user).maximum(:amount)) %>
+              </span>
+            </div>
+            
+            <div class="flex justify-between items-center">
+              <span class="text-gray-500">Current Highest Bid:</span>
+              <span class="text-lg font-semibold <%= auction.current_highest_bid&.user == current_user ? 'text-green-600' : 'text-red-600' %>">
+                <%= number_to_currency(auction.current_price) %>
+              </span>
+            </div>
+          </div>
+
+          <%= link_to 'View Auction', auction_path(auction), 
+              class: 'block w-full text-center py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-md transition-colors duration-200' %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div> 

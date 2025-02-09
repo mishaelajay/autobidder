@@ -1,0 +1,50 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-2xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">New Auction</h1>
+
+    <%= form_with(model: @auction, local: true, class: "space-y-6") do |f| %>
+      <% if @auction.errors.any? %>
+        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+          <h2 class="text-red-800 font-medium">
+            <%= pluralize(@auction.errors.count, "error") %> prohibited this auction from being saved:
+          </h2>
+          <ul class="list-disc list-inside text-red-700">
+            <% @auction.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.label :title, class: "block font-medium" %>
+        <%= f.text_field :title, class: "form-input mt-1 block w-full" %>
+      </div>
+
+      <div>
+        <%= f.label :description, class: "block font-medium" %>
+        <%= f.text_area :description, rows: 4, class: "form-textarea mt-1 block w-full" %>
+      </div>
+
+      <div>
+        <%= f.label :starting_price, class: "block font-medium" %>
+        <%= f.number_field :starting_price, step: "0.01", min: 0, class: "form-input mt-1 block w-full" %>
+      </div>
+
+      <div>
+        <%= f.label :minimum_selling_price, class: "block font-medium" %>
+        <%= f.number_field :minimum_selling_price, step: "0.01", min: 0, class: "form-input mt-1 block w-full" %>
+      </div>
+
+      <div>
+        <%= f.label :ends_at, "End Date and Time", class: "block font-medium" %>
+        <%= f.datetime_local_field :ends_at, class: "form-input mt-1 block w-full" %>
+      </div>
+
+      <div class="flex justify-end space-x-4">
+        <%= link_to 'Cancel', auctions_path, class: "btn-secondary" %>
+        <%= f.submit 'Create Auction', class: "btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div> 

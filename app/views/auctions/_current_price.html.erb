@@ -1,0 +1,6 @@
+<div id="auction_<%= auction.id %>_current_price" class="flex justify-between items-center w-full">
+  <dt class="text-gray-500">Current Price</dt>
+  <dd class="text-xl font-bold text-indigo-600 ml-4">
+    <%= number_to_currency(auction.current_price) %>
+  </dd>
+</div> 
