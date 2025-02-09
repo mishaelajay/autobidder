@@ -37,7 +37,7 @@ class BidsController < ApplicationController
   private
 
   def set_auction
-    @auction = Auction.select(:id, :seller_id, :starting_price, :minimum_selling_price, :ends_at)
+    @auction = Auction.select(:id, :seller_id, :starting_price, :minimum_selling_price, :ends_at, :completed_at)
       .lock("FOR UPDATE")  # Lock the auction record to prevent race conditions
       .find(params[:auction_id])
   end
