@@ -5,22 +5,27 @@
 class ScheduleAuctionCompletionsJob < ApplicationJob
   queue_as :default
 
-  def perform
-    # Find all auctions that:
-    # 1. Have ended
-    # 2. Haven't been completed yet
-    # 3. Don't have a winning bid set
-    pending_auctions = Auction
-                       .where(ends_at: ..Time.current)
-                       .where(completed_at: nil)
-                       .where(winning_bid_id: nil)
+  def perform(schedule_next: true)
+    schedule_pending_auction_completions
+    schedule_next_run if schedule_next
+  end
 
+  private
+
+  def schedule_pending_auction_completions
     pending_auctions.find_each do |auction|
-      # Schedule immediate completion
       CompleteAuctionJob.perform_later(auction.id)
     end
+  end
 
-    # Schedule next run in 5 minutes
-    self.class.set(wait: 5.minutes).perform_later
+  def pending_auctions
+    Auction
+      .where(ends_at: ..Time.current)
+      .where(completed_at: nil)
+      .where(winning_bid_id: nil)
+  end
+
+  def schedule_next_run
+    self.class.set(wait: 5.minutes).perform_later(schedule_next: true)
   end
 end

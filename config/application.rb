@@ -31,5 +31,8 @@ module Autobidder
 
     # Use Sidekiq as the job processor
     config.active_job.queue_adapter = :sidekiq
+
+    # External API endpoint for notifications
+    config.external_api_endpoint = ENV.fetch('EXTERNAL_API_ENDPOINT', 'https://api.example.com/events')
   end
 end

@@ -10,10 +10,24 @@ FactoryBot.define do
     minimum_selling_price { 100.00 }
     ends_at { 1.week.from_now }
 
+    trait :active do
+      ends_at { 1.week.from_now }
+    end
+
     trait :ended do
-      # Skip validation when creating ended auctions
-      to_create { |instance| instance.save(validate: false) }
-      ends_at { 1.day.ago }
+      transient do
+        ended_at { 1.day.ago }
+      end
+
+      ends_at { ended_at }
+
+      after(:build) do |auction, evaluator|
+        auction.ends_at = evaluator.ended_at
+      end
+
+      to_create do |instance|
+        instance.save(validate: false)
+      end
     end
 
     trait :with_bids do
@@ -24,18 +38,16 @@ FactoryBot.define do
 
     trait :completed do
       ended
-      completed_at { Time.current }
 
       after(:create) do |auction|
-        winning_bid = create(:bid, auction: auction)
-        auction.update!(winning_bid: winning_bid)
+        winning_bid = create(:bid, :for_ended_auction, auction: auction)
+        auction.update!(winning_bid: winning_bid, completed_at: Time.current)
       end
     end
 
     # Factory method to create an auction that has already ended
     factory :ended_auction do
-      to_create { |instance| instance.save(validate: false) }
-      ends_at { 1.day.ago }
+      ended
     end
   end
 end

@@ -35,9 +35,23 @@ class User < ApplicationRecord
       .distinct
   }
 
-  def auto_bid_for?(auction)
+  scope :with_active_auctions, lambda {
+    joins(:auctions)
+      .where('auctions.ends_at > ? AND auctions.completed_at IS NULL', Time.current)
+      .distinct
+  }
+
+  scope :with_bids_on_active_auctions, lambda {
+    joins(:bids)
+      .joins('INNER JOIN auctions ON bids.auction_id = auctions.id')
+      .where('auctions.ends_at > ?', Time.current)
+      .distinct
+  }
+
+  def has_auto_bid_for?(auction)
     auto_bids.exists?(auction: auction)
   end
+  alias_method :auto_bid_for?, :has_auto_bid_for?
 
   def current_auto_bid_for(auction)
     auto_bids.find_by(auction: auction)

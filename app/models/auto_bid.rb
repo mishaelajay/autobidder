@@ -16,6 +16,8 @@ class AutoBid < ApplicationRecord
 
   after_create :process_auto_bids
 
+  scope :for_auction, ->(auction) { where(auction: auction) }
+
   private
 
   def cannot_auto_bid_on_own_auction

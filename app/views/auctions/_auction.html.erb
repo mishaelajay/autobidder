@@ -1,0 +1,41 @@
+<div id="<%= dom_id(auction) %>" class="bg-white shadow rounded-lg p-6 mb-4">
+  <div class="flex justify-between items-start">
+    <div>
+      <h3 class="text-lg font-medium text-gray-900">
+        <%= link_to auction.title, auction_path(auction), class: "hover:text-indigo-600" %>
+      </h3>
+      <p class="mt-1 text-sm text-gray-500">
+        Seller: <%= auction.seller.name %>
+      </p>
+    </div>
+    <div class="text-right">
+      <p class="text-lg font-semibold text-indigo-600">
+        <%= number_to_currency(auction.current_price) %>
+      </p>
+      <p class="text-sm text-gray-500">
+        <%= auction.active? ? "Ends in #{distance_of_time_in_words(Time.current, auction.ends_at)}" : "Ended" %>
+      </p>
+    </div>
+  </div>
+  
+  <div class="mt-4 text-sm text-gray-700 line-clamp-2">
+    <%= auction.description %>
+  </div>
+
+  <div class="mt-4 flex justify-between items-center text-sm">
+    <div class="text-gray-500">
+      <% if auction.bids.any? %>
+        <%= pluralize(auction.bids.count, 'bid') %>
+      <% else %>
+        No bids yet
+      <% end %>
+    </div>
+    <div>
+      <% if auction.active? %>
+        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full">Active</span>
+      <% else %>
+        <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full">Ended</span>
+      <% end %>
+    </div>
+  </div>
+</div> 

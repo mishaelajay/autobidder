@@ -6,6 +6,9 @@ FactoryBot.define do
     auction
 
     # Set maximum_amount to be higher than auction's current price
-    maximum_amount { auction.current_price + 100 }
+    maximum_amount do
+      current_price = auction.current_price
+      current_price + 100 # Add a buffer to ensure it's higher than current price
+    end
   end
 end

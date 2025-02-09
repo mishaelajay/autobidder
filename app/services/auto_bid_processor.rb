@@ -10,10 +10,10 @@ class AutoBidProcessor
   def process
     return unless should_process?
 
-    current_highest_bid, next_auto_bid = fetch_bids
+    next_auto_bid = fetch_next_auto_bid
     return unless next_auto_bid
 
-    place_auto_bid(current_highest_bid, next_auto_bid)
+    place_auto_bid(next_auto_bid)
   end
 
   private
@@ -23,57 +23,33 @@ class AutoBidProcessor
       @auction.auto_bids.exists?(['maximum_amount > ?', @auction.current_price])
   end
 
-  def fetch_bids
-    current_price = @auction.current_price
-    bid_data = fetch_bid_data(current_price)
-    parse_bid_data(bid_data)
-  end
-
-  def fetch_bid_data(current_price)
-    @auction.bids
-            .select(bid_select_fields)
-            .joins(auto_bids_join)
-            .where('auto_bids.maximum_amount > ? AND auto_bids.user_id != bids.user_id', current_price)
-            .order('bids.amount DESC, auto_bids.maximum_amount DESC, auto_bids.created_at ASC')
+  def fetch_next_auto_bid
+    @auction.auto_bids
+            .select('auto_bids.*, users.id as user_id')
+            .joins(:user)
+            .where('maximum_amount > ?', @auction.current_price)
+            .order('maximum_amount DESC, created_at ASC')
             .lock('FOR UPDATE SKIP LOCKED')
-            .limit(1)
             .first
   end
 
-  def bid_select_fields
-    'bids.user_id, bids.amount, ' \
-      'auto_bids.id AS auto_bid_id, ' \
-      'auto_bids.user_id AS auto_bid_user_id, ' \
-      'auto_bids.maximum_amount'
-  end
+  def place_auto_bid(auto_bid)
+    current_price = @auction.current_price
+    next_minimum_bid = calculate_next_minimum_bid(current_price)
+    bid_amount = [next_minimum_bid, auto_bid.maximum_amount].min
 
-  def auto_bids_join
-    'LEFT JOIN auto_bids ON auto_bids.auction_id = bids.auction_id'
-  end
-
-  def parse_bid_data(bid_data)
-    return [nil, nil] unless bid_data
-
-    current_highest_bid = bid_data.slice(:user_id, :amount)
-    next_auto_bid = bid_data.slice(:auto_bid_id, :auto_bid_user_id, :maximum_amount)
-
-    [current_highest_bid, next_auto_bid]
-  end
-
-  def place_auto_bid(current_highest_bid, next_auto_bid)
-    current_amount = current_highest_bid ? current_highest_bid['amount'] : @auction.starting_price
-    next_minimum_bid = calculate_next_minimum_bid(current_amount)
-    bid_amount = [next_minimum_bid, next_auto_bid['maximum_amount']].min
-
-    create_bid(next_auto_bid['auto_bid_user_id'], bid_amount)
+    create_bid(auto_bid.user_id, bid_amount)
   end
 
   def create_bid(user_id, amount)
-    Bid.create!(
+    bid = Bid.create!(
       user_id: user_id,
       auction_id: @auction.id,
       amount: amount
     )
+
+    # Recursively process next auto bid if available
+    process if bid.persisted?
   end
 
   def calculate_next_minimum_bid(current_price)

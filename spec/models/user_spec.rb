@@ -94,8 +94,8 @@ RSpec.describe User do
     describe '.with_active_auctions' do
       let(:user_with_active) { create(:user) }
       let(:user_with_ended) { create(:user) }
-      let!(:active_auction) { create(:auction, :active, user: user_with_active) }
-      let!(:ended_auction) { create(:auction, :ended, user: user_with_ended) }
+      let!(:active_auction) { create(:auction, :active, seller: user_with_active) }
+      let!(:ended_auction) { create(:auction, :ended, seller: user_with_ended) }
 
       it 'includes users with active auctions' do
         expect(described_class.with_active_auctions).to include(user_with_active)
@@ -106,7 +106,7 @@ RSpec.describe User do
       end
 
       it 'returns unique users' do
-        create(:auction, :active, user: user_with_active)
+        create(:auction, :active, seller: user_with_active)
         expect(described_class.with_active_auctions.count).to eq(1)
       end
     end
@@ -114,12 +114,12 @@ RSpec.describe User do
     describe '.with_bids_on_active_auctions' do
       let(:bidder_active) { create(:user) }
       let(:bidder_ended) { create(:user) }
-      let(:active_auction) { create(:auction, :active) }
+      let(:active_auction) { create(:auction, ends_at: 1.day.from_now) }
       let(:ended_auction) { create(:auction, :ended) }
 
       before do
         create(:bid, user: bidder_active, auction: active_auction)
-        create(:bid, user: bidder_ended, auction: ended_auction)
+        create(:bid, :for_ended_auction, user: bidder_ended, auction: ended_auction)
       end
 
       it 'includes users with bids on active auctions' do

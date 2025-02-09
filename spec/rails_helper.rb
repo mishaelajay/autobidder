@@ -2,6 +2,7 @@
 
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 require 'spec_helper'
+require 'webmock/rspec'
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
 # Prevent database truncation if the environment is production
@@ -36,9 +37,15 @@ rescue ActiveRecord::PendingMigrationError => e
   exit 1
 end
 
+# Configure WebMock
+WebMock.disable_net_connect!(allow_localhost: true)
+
 RSpec.configure do |config|
   # Factory Bot
   config.include FactoryBot::Syntax::Methods
+
+  # Time helpers
+  config.include ActiveSupport::Testing::TimeHelpers
 
   # Use transactions for cleaning the database
   config.use_transactional_fixtures = true

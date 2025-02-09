@@ -1,50 +1,97 @@
 <div class="container mx-auto px-4 py-8">
   <div class="max-w-2xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">New Auction</h1>
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div class="p-6 sm:p-8">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Create New Auction</h1>
 
-    <%= form_with(model: @auction, local: true, class: "space-y-6") do |f| %>
-      <% if @auction.errors.any? %>
-        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
-          <h2 class="text-red-800 font-medium">
-            <%= pluralize(@auction.errors.count, "error") %> prohibited this auction from being saved:
-          </h2>
-          <ul class="list-disc list-inside text-red-700">
-            <% @auction.errors.full_messages.each do |msg| %>
-              <li><%= msg %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
+        <%= form_with(model: @auction, class: "space-y-6") do |f| %>
+          <% if @auction.errors.any? %>
+            <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-red-800">
+                    <%= pluralize(@auction.errors.count, "error") %> prohibited this auction from being saved:
+                  </h3>
+                  <div class="mt-2 text-sm text-red-700">
+                    <ul class="list-disc pl-5 space-y-1">
+                      <% @auction.errors.full_messages.each do |message| %>
+                        <li><%= message %></li>
+                      <% end %>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
 
-      <div>
-        <%= f.label :title, class: "block font-medium" %>
-        <%= f.text_field :title, class: "form-input mt-1 block w-full" %>
+          <div>
+            <%= f.label :title, class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= f.text_field :title, 
+                class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                placeholder: "Enter auction title" %>
+          </div>
+
+          <div>
+            <%= f.label :description, class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= f.text_area :description, 
+                rows: 4, 
+                class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                placeholder: "Describe your auction item in detail" %>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <%= f.label :starting_price, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <div class="relative rounded-md shadow-sm">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <span class="text-gray-500 sm:text-sm">$</span>
+                </div>
+                <%= f.number_field :starting_price, 
+                    step: "0.01", 
+                    min: "0.01",
+                    class: "block w-full rounded-md border-gray-300 pl-7 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                    placeholder: "0.00" %>
+              </div>
+              <p class="mt-1 text-sm text-gray-500">Initial bidding price</p>
+            </div>
+
+            <div>
+              <%= f.label :minimum_selling_price, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <div class="relative rounded-md shadow-sm">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <span class="text-gray-500 sm:text-sm">$</span>
+                </div>
+                <%= f.number_field :minimum_selling_price, 
+                    step: "0.01", 
+                    min: "0.01",
+                    class: "block w-full rounded-md border-gray-300 pl-7 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                    placeholder: "0.00" %>
+              </div>
+              <p class="mt-1 text-sm text-gray-500">Minimum price to complete sale</p>
+            </div>
+          </div>
+
+          <div>
+            <%= f.label :ends_at, "End Date and Time", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= f.datetime_local_field :ends_at, 
+                min: Time.current.strftime('%Y-%m-%dT%H:%M'),
+                class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+            <p class="mt-1 text-sm text-gray-500">When should the auction end?</p>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-6">
+            <%= link_to "Cancel", auctions_path, 
+                class: "px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+            <%= f.submit "Create Auction", 
+                class: "px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+          </div>
+        <% end %>
       </div>
-
-      <div>
-        <%= f.label :description, class: "block font-medium" %>
-        <%= f.text_area :description, rows: 4, class: "form-textarea mt-1 block w-full" %>
-      </div>
-
-      <div>
-        <%= f.label :starting_price, class: "block font-medium" %>
-        <%= f.number_field :starting_price, step: "0.01", min: 0, class: "form-input mt-1 block w-full" %>
-      </div>
-
-      <div>
-        <%= f.label :minimum_selling_price, class: "block font-medium" %>
-        <%= f.number_field :minimum_selling_price, step: "0.01", min: 0, class: "form-input mt-1 block w-full" %>
-      </div>
-
-      <div>
-        <%= f.label :ends_at, "End Date and Time", class: "block font-medium" %>
-        <%= f.datetime_local_field :ends_at, class: "form-input mt-1 block w-full" %>
-      </div>
-
-      <div class="flex justify-end space-x-4">
-        <%= link_to 'Cancel', auctions_path, class: "btn-secondary" %>
-        <%= f.submit 'Create Auction', class: "btn-primary" %>
-      </div>
-    <% end %>
+    </div>
   </div>
 </div> 

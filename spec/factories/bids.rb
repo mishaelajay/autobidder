@@ -8,8 +8,9 @@ FactoryBot.define do
     amount { auction.minimum_next_bid }
 
     trait :for_ended_auction do
-      # Skip validation when creating bids for ended auctions
-      to_create { |instance| instance.save(validate: false) }
+      to_create do |instance|
+        instance.save(validate: false)
+      end
     end
 
     trait :winning do

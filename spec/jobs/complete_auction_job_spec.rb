@@ -7,7 +7,7 @@ RSpec.describe CompleteAuctionJob do
 
   let(:seller) { create(:user) }
   let(:bidder) { create(:user) }
-  let(:auction) { create(:auction, seller: seller, ends_at: 1.hour.ago) }
+  let(:auction) { create(:auction, :ended, seller: seller) }
   let(:mailer) { instance_spy(ActionMailer::MessageDelivery) }
   let(:auction_mailer) do
     class_spy(AuctionMailer, winner_notification: mailer,
@@ -23,7 +23,7 @@ RSpec.describe CompleteAuctionJob do
 
   describe '#perform' do
     context 'when auction has a winning bid' do
-      let!(:winning_bid) { create(:bid, auction: auction, user: bidder, amount: 100) }
+      let!(:winning_bid) { create(:bid, :for_ended_auction, auction: auction, user: bidder, amount: 100) }
 
       it 'completes the auction with the winning bid' do
         expect do

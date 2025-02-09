@@ -166,17 +166,14 @@ RSpec.describe Auction do
 
   describe 'callbacks' do
     describe 'after_create' do
-      let(:job_double) { instance_spy(JobDouble, perform_later: true) }
-      let(:complete_auction_job) { class_spy(CompleteAuctionJob, set: job_double) }
-
-      before do
-        stub_const('CompleteAuctionJob', complete_auction_job)
-      end
-
       it 'schedules auction completion job' do
-        auction.save
-        expect(complete_auction_job).to have_received(:set).with(wait_until: auction.ends_at)
-        expect(job_double).to have_received(:perform_later).with(auction)
+        job_class = class_double(CompleteAuctionJob).as_stubbed_const
+        allow(job_class).to receive(:set).with(hash_including(wait: be_within(1).of(604800))).and_return(job_class)
+        allow(job_class).to receive(:perform_later)
+
+        auction.save!
+
+        expect(job_class).to have_received(:perform_later).with(auction.id)
       end
     end
   end

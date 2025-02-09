@@ -46,7 +46,6 @@ class BidsController < ApplicationController
   end
 
   def handle_successful_bid
-    AutoBidProcessor.new(@auction).process
     respond_to_successful_bid
   end
 

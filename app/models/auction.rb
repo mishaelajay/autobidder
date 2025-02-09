@@ -5,6 +5,7 @@
 class Auction < ApplicationRecord
   belongs_to :seller, class_name: 'User'
   belongs_to :winning_bid, class_name: 'Bid', optional: true
+  belongs_to :winning_bidder, class_name: 'User', optional: true
 
   has_many :bids, dependent: :destroy
   has_many :bidders, through: :bids, source: :user

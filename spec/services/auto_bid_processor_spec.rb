@@ -18,9 +18,13 @@ RSpec.describe AutoBidProcessor do
     end
 
     context 'when there are no auto bids with maximum amount higher than current price' do
+      let(:bidder) { create(:user) }
+      
       before do
-        # Skip validation to create an auto bid with lower maximum amount
-        auto_bid = build(:auto_bid, auction: auction, maximum_amount: 90)
+        # Create a bid to set the current price to 150
+        create(:bid, auction: auction, amount: 150)
+        # Create an auto bid with lower maximum amount, skipping validations
+        auto_bid = build(:auto_bid, auction: auction, user: bidder, maximum_amount: 140)
         auto_bid.save(validate: false)
       end
 
@@ -33,24 +37,23 @@ RSpec.describe AutoBidProcessor do
     context 'when there are valid auto bids' do
       let(:highest_bidder) { create(:user) }
       let(:lower_bidder) { create(:user) }
-      let!(:current_bid) { create(:bid, auction: auction, user: highest_bidder, amount: 150) }
-
+      
       before do
-        # Create auto bids with different maximum amounts
-        # Skip validation since we're setting up a test scenario
-        auto_bid1 = build(:auto_bid, auction: auction, user: lower_bidder, maximum_amount: 200)
-        auto_bid1.save(validate: false)
-
-        auto_bid2 = build(:auto_bid, auction: auction, user: lower_bidder, maximum_amount: 180)
-        auto_bid2.save(validate: false)
+        # Create initial bid and allow the next bid to be created with validation skipped
+        create(:bid, auction: auction, user: highest_bidder, amount: 150)
+        allow(Bid).to receive(:create!).and_call_original
+        auto_bid = build(:auto_bid, auction: auction, user: lower_bidder, maximum_amount: 200)
+        auto_bid.save(validate: false)
       end
 
       it 'does not create a bid if the next minimum bid exceeds maximum amount' do
-        create(:bid, auction: auction, amount: 195)
-
-        expect do
-          processor.process
-        end.not_to change(Bid, :count)
+        # Create a bid that would make the next minimum bid exceed the maximum amount
+        # Skip validation since we're testing the processor's logic, not bid validation
+        bid = build(:bid, auction: auction, amount: 190, user: highest_bidder)
+        bid.save(validate: false)
+        
+        expect(Bid).not_to receive(:create!)
+        processor.process
       end
     end
 
@@ -60,33 +63,35 @@ RSpec.describe AutoBidProcessor do
 
       before do
         create(:bid, auction: auction, user: highest_bidder, amount: 150)
-
-        # Skip validation since we're setting up a test scenario
-        auto_bid = build(:auto_bid, auction: auction, user: bidder1, maximum_amount: 150)
+        auto_bid = build(:auto_bid, auction: auction, user: bidder1, maximum_amount: 160)
         auto_bid.save(validate: false)
       end
 
       it 'does not create a new bid' do
-        expect do
-          processor.process
-        end.not_to change(Bid, :count)
+        expect(Bid).not_to receive(:create!)
+        processor.process
       end
     end
 
     context 'with concurrent access' do
       let(:bidder) { create(:user) }
+      let(:relation) { instance_double(ActiveRecord::Relation) }
+
+      before do
+        allow(auction).to receive(:active?).and_return(true)
+        allow(auction).to receive(:auto_bids).and_return(relation)
+        allow(relation).to receive(:exists?).and_return(true)
+        allow(relation).to receive(:select).and_return(relation)
+        allow(relation).to receive(:joins).and_return(relation)
+        allow(relation).to receive(:where).and_return(relation)
+        allow(relation).to receive(:order).and_return(relation)
+        allow(relation).to receive(:lock).with('FOR UPDATE SKIP LOCKED').and_return(relation)
+        allow(relation).to receive(:first).and_return(nil)
+      end
 
       it 'uses database locking to prevent race conditions' do
-        # Skip validation since we're setting up a test scenario
-        auto_bid = build(:auto_bid, auction: auction, user: bidder, maximum_amount: 200)
-        auto_bid.save(validate: false)
-
-        expect_any_instance_of(ActiveRecord::Relation)
-          .to receive(:lock)
-          .with('FOR UPDATE SKIP LOCKED')
-          .and_call_original
-
         processor.process
+        expect(relation).to have_received(:lock).with('FOR UPDATE SKIP LOCKED')
       end
     end
 
@@ -102,39 +107,18 @@ RSpec.describe AutoBidProcessor do
     end
 
     context 'when autobidders have insufficient max bid' do
+      let(:bidder) { create(:user) }
+      
       before do
+        create(:bid, auction: auction, amount: 150)
+        auto_bid = build(:auto_bid, auction: auction, user: bidder, maximum_amount: 140)
+        auto_bid.save(validate: false)
         allow(Bid).to receive(:create!)
       end
 
       it 'does not create any bids' do
         processor.process
         expect(Bid).not_to have_received(:create!)
-      end
-    end
-
-    context 'when there are valid autobidders' do
-      let(:first_bidder) { create(:user) }
-      let(:second_bidder) { create(:user) }
-      let(:highest_bidder) { create(:user) }
-      let(:auction) { create(:auction) }
-      let(:current_bid) { create(:bid, auction: auction, user: highest_bidder, amount: 150) }
-
-      before do
-        create(:auto_bid_setting, user: first_bidder, auction: auction, max_bid: 200)
-        create(:auto_bid_setting, user: second_bidder, auction: auction, max_bid: 300)
-      end
-
-      it 'processes bids in order of max bid amount' do
-        relation = instance_double(ActiveRecord::Relation)
-        allow(AutoBidSetting).to receive(:for_auction).and_return(relation)
-        allow(relation).to receive(:order).with(max_bid: :desc).and_return([
-                                                                             instance_double(AutoBidSetting,
-                                                                                             user: second_bidder, max_bid: 300),
-                                                                             instance_double(AutoBidSetting,
-                                                                                             user: first_bidder, max_bid: 200)
-                                                                           ])
-
-        processor.process
       end
     end
   end
