@@ -123,30 +123,3 @@ Monitor background jobs at http://localhost:3000/sidekiq (requires authenticatio
 ### Email Delivery
 
 In development, emails are caught by the `letter_opener` gem and can be viewed in the browser.
-
-## Production Deployment
-
-Additional steps for production deployment:
-
-1. Set up proper database (PostgreSQL recommended)
-2. Configure environment variables:
-   ```
-   REDIS_URL=redis://your-redis-url
-   DATABASE_URL=postgres://your-database-url
-   RAILS_MASTER_KEY=your-master-key
-   ```
-3. Set up proper email delivery service
-4. Configure SSL/TLS
-5. Set up proper background job processing
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE.md file for details
