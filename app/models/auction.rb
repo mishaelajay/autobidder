@@ -1,8 +1,10 @@
 class Auction < ApplicationRecord
   belongs_to :seller, class_name: 'User'
+  belongs_to :winning_bid, class_name: 'Bid', optional: true
+  
   has_many :bids, dependent: :destroy
-  has_many :auto_bids, dependent: :destroy
   has_many :bidders, through: :bids, source: :user
+  has_many :auto_bids, dependent: :destroy
 
   broadcasts
 
@@ -14,6 +16,8 @@ class Auction < ApplicationRecord
 
   validate :ends_at_must_be_future, on: :create
 
+  after_create :schedule_completion_job
+
   scope :active, -> { where('ends_at > ?', Time.current) }
   scope :ended, -> { where('ends_at <= ?', Time.current) }
   scope :won, -> { ended.joins(:bids).where('bids.amount >= auctions.minimum_selling_price') }
@@ -22,11 +26,15 @@ class Auction < ApplicationRecord
   broadcasts_to ->(auction) { [auction, "bids"] }
 
   def active?
-    ends_at > Time.current
+    !ended? && !completed?
   end
 
   def ended?
-    !active?
+    ends_at <= Time.current
+  end
+
+  def completed?
+    completed_at.present?
   end
 
   def current_highest_bid
@@ -34,18 +42,15 @@ class Auction < ApplicationRecord
   end
 
   def current_price
-    current_highest_bid&.amount || starting_price
+    bids.maximum(:amount) || starting_price
   end
 
   def minimum_next_bid
-    [starting_price, current_highest_bid&.amount.to_f + minimum_bid_increment].max
+    current_price + calculate_increment(current_price)
   end
 
   def winner
-    return nil unless ended?
-    highest_bid = current_highest_bid
-    return nil if highest_bid.nil? || highest_bid.amount < minimum_selling_price
-    highest_bid.user
+    winning_bid&.user
   end
 
   def formatted_current_price
@@ -60,17 +65,21 @@ class Auction < ApplicationRecord
     end
   end
 
-  def minimum_bid_increment
-    current_price = current_highest_bid&.amount.to_f
+  def schedule_completion_job
+    delay = ends_at - Time.current
+    CompleteAuctionJob.set(wait: delay).perform_later(id)
+  end
+
+  def calculate_increment(current_price)
     case current_price
     when 0..0.99 then 0.05
     when 1..4.99 then 0.25
-    when 5..24.99 then 0.5
-    when 25..99.99 then 1
-    when 100..249.99 then 2.5
-    when 250..499.99 then 5
-    when 500..999.99 then 10
-    else 25
+    when 5..24.99 then 0.50
+    when 25..99.99 then 1.00
+    when 100..249.99 then 2.50
+    when 250..499.99 then 5.00
+    when 500..999.99 then 10.00
+    else 25.00
     end
   end
 end 

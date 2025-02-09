@@ -1,14 +1,18 @@
 class Bid < ApplicationRecord
+  paginates_per 25  # Set default pagination limit
+  
   belongs_to :user
   belongs_to :auction, touch: true
 
   validates :amount, presence: true, numericality: { greater_than: 0 }
-  validate :auction_must_be_active
-  validate :amount_must_be_minimum_next_bid
-  validate :cannot_bid_on_own_auction
+  validates :user, :auction, presence: true
   
-  after_commit :schedule_auto_bids_processing, on: :create
-  after_commit :notify_outbid_users, on: :create
+  validate :auction_must_be_active, if: -> { auction.present? }
+  validate :amount_must_be_minimum_next_bid, if: -> { auction.present? }
+  validate :cannot_bid_on_own_auction, if: -> { auction.present? && user.present? }
+  
+  after_create :process_auto_bids
+  after_create :notify_outbid_users
   after_create_commit :broadcast_bid
 
   private
@@ -32,19 +36,23 @@ class Bid < ApplicationRecord
     end
   end
 
-  def schedule_auto_bids_processing
-    ProcessAutoBidsJob.set(wait: 1.second).perform_later(auction_id)
+  def process_auto_bids
+    AutoBidProcessor.new(auction).process
   end
 
   def notify_outbid_users
-    # Use a single query to get unique previous bidders
-    previous_bidder_ids = auction.bids
+    # Get the latest bid for each user using a subquery
+    previous_bids = auction.bids
       .where.not(user_id: user_id)
-      .select('DISTINCT user_id')
+      .where(
+        id: auction.bids
+          .select('MAX(id)')
+          .group(:user_id)
+      )
       .limit(100)  # Limit to prevent overwhelming the system
       
-    previous_bidder_ids.each do |bid|
-      BidMailer.outbid_notification(bid.user_id, auction_id)
+    previous_bids.each do |bid|
+      BidMailer.outbid_notification(bid)
         .deliver_later(wait: 30.seconds)
     end
   end

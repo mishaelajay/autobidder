@@ -4,11 +4,17 @@ class BidsController < ApplicationController
 
   def index
     @bids = current_user.bids
-      .includes(:auction)  # Eager load auctions
-      .select('bids.*, auctions.title as auction_title')  # Select only needed fields
-      .order(created_at: :desc)
+      .joins(:auction)
+      .includes(:auction)  # Keep the eager loading for auction associations
+      .select(
+        'bids.id',
+        'bids.amount',
+        'bids.created_at',
+        'bids.auction_id',
+        'auctions.title as auction_title'
+      )
+      .order('bids.created_at DESC')
       .page(params[:page])
-      .per(50)  # Paginate results
   end
 
   def create

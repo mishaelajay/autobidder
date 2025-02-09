@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_02_09_163622) do
+ActiveRecord::Schema[7.1].define(version: 2025_02_09_171700) do
   create_table "auctions", force: :cascade do |t|
     t.string "title", null: false
     t.text "description", null: false
@@ -20,8 +20,14 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_09_163622) do
     t.integer "seller_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "completed_at"
+    t.integer "winning_bid_id"
+    t.integer "winning_bidder_id"
+    t.index ["completed_at"], name: "index_auctions_on_completed_at"
     t.index ["ends_at"], name: "index_auctions_on_ends_at"
     t.index ["seller_id"], name: "index_auctions_on_seller_id"
+    t.index ["winning_bid_id"], name: "index_auctions_on_winning_bid_id"
+    t.index ["winning_bidder_id"], name: "index_auctions_on_winning_bidder_id"
   end
 
   create_table "auto_bids", force: :cascade do |t|
@@ -69,7 +75,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_09_163622) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "auctions", "bids", column: "winning_bid_id"
   add_foreign_key "auctions", "users", column: "seller_id"
+  add_foreign_key "auctions", "users", column: "winning_bidder_id"
   add_foreign_key "auto_bids", "auctions"
   add_foreign_key "auto_bids", "users"
   add_foreign_key "bids", "auctions"
